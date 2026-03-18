@@ -8,6 +8,9 @@ export default defineConfig({
     port: 5173,
     host: true
   },
+  preview: {
+    allowedHosts: ['erp-ministerial.onrender.com'],
+  },
   build: {
     outDir: 'dist',
     sourcemap: false,
