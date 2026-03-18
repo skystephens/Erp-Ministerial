@@ -1,0 +1,8 @@
+{
+  "name": "Ministerial ERP - TAFE",
+  "description": "A comprehensive system for managing ministerial assets, tasks, and service hours with AI-driven talent mapping and traceability.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ]
+}
