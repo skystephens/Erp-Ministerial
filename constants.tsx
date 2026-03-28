@@ -79,6 +79,7 @@ export const NAV_SECTIONS: NavSection[] = [
     label: 'Medios & Comunicaciones',
     icon: <MonitorSpeaker size={16} />,
     items: [
+      { id: 'ministry_panel', label: 'Panel E5 — Medios', icon: <MonitorPlay size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
       { id: 'media_strategy', label: 'Estrategia Medios', icon: <BarChart3 size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
       { id: 'content_manager', label: 'Gestor Contenidos', icon: <Newspaper size={18} /> },
       { id: 'operations', label: 'Tareas de Medios', icon: <Briefcase size={18} /> },
@@ -89,8 +90,7 @@ export const NAV_SECTIONS: NavSection[] = [
     label: 'Gestión Ministerial',
     icon: <Building2 size={16} />,
     items: [
-      { id: 'ministry_panel', label: 'Panel Ministerial', icon: <MonitorPlay size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
-      { id: 'projects', label: 'Plan TAFE (Ejes)', icon: <Layers size={18} /> },
+      { id: 'projects', label: 'Plan TAFE — 7 Ejes', icon: <Layers size={18} /> },
       { id: 'timebank', label: 'Banco de Tiempo', icon: <HeartHandshake size={18} /> },
       { id: 'calendar', label: 'Calendario 2026', icon: <CalendarDays size={18} /> },
     ],
@@ -228,80 +228,87 @@ export const MINISTRY_HIERARCHY = [
 export const AXIS_SCHEMA: Record<ApostolicAxis, any> = {
   E1_EVANGELISMO: {
     label: 'E1: Evangelismo y Células',
-    status: 'Activo - Conquista',
+    pastora: 'Martha Porras',
+    status: 'Puerta de entrada al Reino',
     progress: 85,
     color: 'bg-turqui',
-    function: 'Conquistar nuevas almas para el Reino y formarlas en células',
+    function: 'Conquistar nuevas almas, integrarlas en células y acompañarlas hasta la consolidación',
     responsibilities: [
-      { name: 'Brigadas de Impacto', actions: ['Mapeo de zonas', 'Evangelismo callejero'] },
-      { name: 'Células', actions: ['Reuniones semanales', 'Seguimiento de nuevos'] }
+      { name: 'Brigadas de Evangelismo', actions: ['Salidas de campo semanales', 'Mapeo de zonas y sectores', 'Registro digital de prospectos', 'Coordinación con E3 para entrega de nuevos'] },
+      { name: 'Grupos Celulares', actions: ['Reuniones semanales en hogares', 'Seguimiento de asistencia', 'Prédica semanal del líder', 'Reportes al eje'] },
     ]
   },
   E2_INTERCESION: {
     label: 'E2: Intercesión y Formación Bíblica',
-    status: 'Sosteniendo - Ayuno',
+    pastora: 'María Mónica Bujato',
+    status: 'Motor espiritual del proyecto',
     progress: 100,
     color: 'bg-navy-tafe',
-    function: 'Cobertura espiritual de la iglesia y formación en la Palabra',
+    function: 'Sostener espiritualmente toda la operación de la iglesia y formar a la congregación en la Palabra',
     responsibilities: [
-      { name: 'Vigilias', actions: ['Organización de turnos', 'Temas de oración'] },
-      { name: 'Formación Bíblica', actions: ['Estudios bíblicos', 'Escuelas de la Palabra'] }
+      { name: 'Intercesión', actions: ['Vigilia semanal de madrugada', 'Cadenas de ayuno', 'Cobertura espiritual de eventos', 'Oración por ministerios y pastoras'] },
+      { name: 'Formación Bíblica', actions: ['Escuela "Nueva Vida en Cristo"', 'Estudio "Afirmando los Pasos"', 'Escuela de Liderazgo (miércoles)', 'Seguimiento de matrículas y progreso'] },
     ]
   },
   E3_CONSOLIDACION: {
     label: 'E3: Consolidación, Anfitriones y Guardianes',
-    status: 'Reteniendo Fruto',
+    pastora: 'Guillermina Martínez',
+    status: 'Reteniendo el fruto',
     progress: 40,
     color: 'bg-emerald-500',
-    function: 'Cuidado, retención y protección del nuevo creyente',
+    function: 'Retener lo que el evangelismo alcanza: recibir, acompañar y proteger al nuevo creyente',
     responsibilities: [
-      { name: 'Consolidación', actions: ['Llamadas de bienvenida', 'Visitas pastorales'] },
-      { name: 'Anfitriones', actions: ['Recepción en cultos', 'Atención al visitante'] },
-      { name: 'Guardianes', actions: ['Seguridad y orden', 'Protección del templo'] }
+      { name: 'Consolidación', actions: ['Llamadas de bienvenida (24–48h)', 'Visitas pastorales a hogares', 'Integración al grupo de nuevos (domingo)', 'Seguimiento hasta la célula'] },
+      { name: 'Anfitriones', actions: ['Recepción en puerta cada culto', 'Atención al visitante y nuevo', 'Orientación en el templo', 'Reporte de asistencia'] },
+      { name: 'Guardianes', actions: ['Seguridad y orden en el templo', 'Protección de eventos', 'Coordinación con liderazgo'] },
     ]
   },
   E4_INFANCIA_DANZA: {
     label: 'E4: Danza y Escuela Infantil AMO',
-    status: 'Generacional',
+    pastora: 'Claudia de la Oz',
+    status: 'Formación generacional',
     progress: 60,
     color: 'bg-pink-500',
-    function: 'Formación espiritual de niños y expresión artística para Dios',
+    function: 'Ministrar a través de la danza profética y formar espiritualmente a la niñez',
     responsibilities: [
-      { name: 'Escuela Infantil AMO', actions: ['Clases dominicales', 'Material didáctico'] },
-      { name: 'Danza', actions: ['Ensayos semanales', 'Presentaciones en cultos'] }
+      { name: 'Danza Profética', actions: ['Ensayos semanales', 'Presentaciones en cultos dominicales', 'Coreografías para eventos especiales', 'Formación en adoración corporal'] },
+      { name: 'Escuela Infantil AMO', actions: ['Clase dominical paralela al culto', 'Material didáctico por edades', 'Actividades de integración familiar', 'Registro de asistencia de niños'] },
     ]
   },
   E5_ALABANZA_AV: {
     label: 'E5: Medios y Alabanza',
-    status: 'Atmósfera Espiritual',
+    pastora: 'Liseth Lever',
+    status: 'Atmósfera espiritual y amplificación',
     progress: 90,
     color: 'bg-blue-500',
-    function: 'Comunicaciones, producción audiovisual y adoración',
+    function: 'Establecer atmósfera de adoración y amplificar el mensaje de la iglesia hacia adentro y hacia afuera',
     responsibilities: [
-      { name: 'CSI / Medios', actions: ['Setup de sonido', 'Streaming', 'Diseño', 'Redes sociales'] },
-      { name: 'Alabanza', actions: ['Dirección de adoración', 'Ensayos', 'Producción musical'] }
+      { name: 'CSI / Medios', actions: ['Setup de sonido e iluminación', 'Streaming en vivo', 'Diseño gráfico y comunicaciones', 'Redes sociales y contenido digital', 'TAFE News semanal'] },
+      { name: 'Alabanza', actions: ['Dirección de adoración en cultos', 'Ensayos semanales', 'Producción musical', 'Preparación de letras y visuales'] },
     ]
   },
   E6_SOCIAL_CUIDADO: {
     label: 'E6: Atención Social y Cuidado Pastoral',
-    status: 'Restauración',
+    pastora: 'Luz Elena Pretel',
+    status: 'Sanando y sosteniendo familias',
     progress: 30,
     color: 'bg-amber-500',
-    function: 'Impacto social, ayuda al necesitado y cuidado de la congregación',
+    function: 'Sanar, acompañar y sostener a las familias alcanzadas por el evangelio',
     responsibilities: [
-      { name: 'Atención Social', actions: ['Gestión de ayudas', 'Banco de Tiempo'] },
-      { name: 'Cuidado Pastoral', actions: ['Visitas a enfermos', 'Acompañamiento familiar'] }
+      { name: 'Atención Social', actions: ['Banco de Tiempo — gestión de talentos', 'Ayudas materiales a familias en necesidad', 'Coordinación con entidades externas', 'Registro de intervenciones'] },
+      { name: 'Cuidado Pastoral', actions: ['Visitas a enfermos y hospitalizados', 'Acompañamiento en duelo y crisis familiar', 'Consejería pastoral', 'Seguimiento post-crisis'] },
     ]
   },
   E7_JOVENES: {
     label: 'E7: Adolescentes Oasis y Adultos Jóvenes Generación de Joel',
-    status: 'Continuidad',
+    pastora: 'Zuleima Sandoval',
+    status: 'Continuidad generacional del Reino',
     progress: 55,
     color: 'bg-indigo-500',
-    function: 'Pastoreo integral de adolescentes y jóvenes adultos',
+    function: 'Pastorear integralmente a adolescentes y adultos jóvenes para que hereden y multipliquen el Reino',
     responsibilities: [
-      { name: 'Adolescentes Oasis', actions: ['Reunión semanal sábados', 'Discipulado adolescente'] },
-      { name: 'Generación de Joel', actions: ['Jóvenes adultos', 'Liderazgo emergente'] }
+      { name: 'Adolescentes Oasis', actions: ['Reunión semanal sábados 14:00', 'Discipulado y mentoría', 'Actividades de integración juvenil', 'Seguimiento individual'] },
+      { name: 'Adultos Jóvenes — Generación de Joel', actions: ['Reunión semanal sábados 16:00', 'Formación en liderazgo emergente', 'Activación en ministerios', 'Proyectos de impacto generacional'] },
     ]
   },
 };
