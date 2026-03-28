@@ -213,6 +213,24 @@ export const validarTransaccion = (recordId: string) =>
 export const getEjesApostolicos = () =>
   fetchTable<EjeApostolicoFields>('[DB] Ejes_Apostolicos');
 
+// --- Horario de Servicios CSI Medios ---
+export type HorarioCSIFields = {
+  Fecha: string;
+  Servicio: string;
+  'Rol Asignado': string;
+  'Persona a cargo': string[];
+  Notas?: string;
+};
+
+export const getHorarioCSI = (filterFormula?: string) =>
+  fetchTable<HorarioCSIFields>('Horario de Servicios CSI Medios', filterFormula);
+
+export const updateHorarioCSI = (recordId: string, fields: Partial<HorarioCSIFields>) =>
+  updateRecord<HorarioCSIFields>('Horario de Servicios CSI Medios', recordId, fields);
+
+export const createHorarioCSI = (fields: HorarioCSIFields) =>
+  createRecord<HorarioCSIFields>('Horario de Servicios CSI Medios', fields);
+
 // --- Sync híbrido: crea tarea y registra aporte en Banco_Tiempo ---
 export const syncTareaConBanco = async (
   tarea: TareaFields,

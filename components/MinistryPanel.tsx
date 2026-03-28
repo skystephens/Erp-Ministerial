@@ -1,28 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { User, Task, UserRole } from '../types';
-import { 
-  MonitorPlay, 
-  CheckSquare, 
-  Zap, 
-  Settings, 
-  Layout, 
-  Radio, 
-  Volume2, 
-  Lightbulb, 
-  Camera,
+import {
+  Zap,
   Layers,
-  Calendar,
   PlusCircle,
   AlertTriangle,
   Send,
   Bell,
   ChevronDown,
-  Clock,
   ArrowRight,
-  // Fix: Added missing 'Users' icon import
   Users
 } from 'lucide-react';
-import { MINISTRY_DETAILS, MINISTRY_HIERARCHY, SERVICE_SCHEDULES } from '../constants';
+import { MINISTRY_DETAILS } from '../constants';
+import HorarioCSI from './HorarioCSI';
 
 interface Requirement {
   id: string;
@@ -143,28 +133,8 @@ const MinistryPanel: React.FC<MinistryPanelProps> = ({ user, tasks, onAddTask })
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Columna Izquierda: Rutina y Requerimientos */}
+        {/* Columna Izquierda: Requerimientos */}
         <div className="space-y-8">
-          {/* Rutina Fija de Servicio */}
-          <section className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
-             <h3 className="font-montserrat font-bold text-slate-800 mb-6 flex items-center gap-3">
-              <Clock className="text-navy-tafe" /> Horarios de Servicio
-            </h3>
-            <div className="space-y-3">
-               {SERVICE_SCHEDULES.map(schedule => (
-                 <div key={schedule.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center group hover:border-turqui transition-all">
-                    <div>
-                       <p className="text-[10px] font-bold text-navy-tafe uppercase tracking-widest">{schedule.day}</p>
-                       <p className="text-xs font-bold text-slate-800">{schedule.label}</p>
-                    </div>
-                    <div className="text-right">
-                       <p className="text-lg font-mono font-bold text-slate-400 group-hover:text-turqui transition-colors">{schedule.time}</p>
-                    </div>
-                 </div>
-               ))}
-            </div>
-          </section>
-
           <section className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
             <h3 className="font-montserrat font-bold text-slate-800 mb-6 flex items-center gap-3">
               <AlertTriangle className="text-amber-500" /> Requerimientos del Equipo
@@ -276,6 +246,11 @@ const MinistryPanel: React.FC<MinistryPanelProps> = ({ user, tasks, onAddTask })
           </section>
         </div>
       </div>
+
+      {/* Horario de Servicios CSI — full width */}
+      <section className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+        <HorarioCSI canEdit={user.role === UserRole.SUPER_ADMIN || user.role === UserRole.SUPERVISORA || user.role === UserRole.LIDER_MINISTERIO} />
+      </section>
     </div>
   );
 };
