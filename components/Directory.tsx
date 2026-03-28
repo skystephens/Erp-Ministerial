@@ -179,7 +179,7 @@ const Directory: React.FC<DirectoryProps> = ({ currentUser, onCreateProspect }) 
           <div>
             <p className="font-bold text-amber-800">Directorio Airtable no configurado</p>
             <p className="text-sm text-amber-700 mt-1">
-              Agrega <code className="bg-amber-100 px-1 rounded text-xs">VITE_AIRTABLE_DIRECTORIO_BASE_ID=appOhMA4UJPwKSGP2</code> en las variables de entorno de Render.
+              Agrega <code className="bg-amber-100 px-1 rounded text-xs">VITE_AIRTABLE_BASE_ID1=appOhMA4UJPwKSGP2</code> en las variables de entorno de Render.
             </p>
           </div>
         </div>

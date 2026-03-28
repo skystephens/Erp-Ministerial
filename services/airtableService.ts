@@ -285,7 +285,7 @@ export type DirectorioMiembroFields = {
 };
 
 const DIRECTORIO_BASE_ID = () =>
-  (import.meta.env.VITE_AIRTABLE_DIRECTORIO_BASE_ID as string) || '';
+  (import.meta.env.VITE_AIRTABLE_BASE_ID1 as string) || '';
 
 export const directorioIsActive = (): boolean => {
   const id = DIRECTORIO_BASE_ID();
