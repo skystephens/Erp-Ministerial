@@ -125,6 +125,8 @@ export interface CalendarEvent {
   ministry: string;
   type: string;
   axis?: ApostolicAxis;
+  recurrenceGroupId?: string;
+  recurrenceLabel?: string;
 }
 
 export type ContentChannel = 'FB' | 'INS' | 'YOU' | 'COMUNIDAD' | 'WEB' | 'EN_VIVO' | 'WHATSAPP';
