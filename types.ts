@@ -144,4 +144,5 @@ export interface ContentPiece {
   deliveryDate: string;        // Fecha entrega
   campaign: string;            // Campaña / serie
   axis?: ApostolicAxis;        // Eje apostólico relacionado
+  driveUrl: string;            // Enlace al archivo en Google Drive
 }
