@@ -51,10 +51,10 @@ const Dashboard: React.FC<{ role: UserRole }> = ({ role }) => {
     const loadData = async () => {
       try {
         const [miembros, ministerios, tareas, cronograma] = await Promise.all([
-          getMiembros(),
-          getMinisterios(),
-          getTareas(),
-          getCronograma(),
+          getMiembros().catch(() => []),
+          getMinisterios().catch(() => []),
+          getTareas().catch(() => []),
+          getCronograma().catch(() => []),
         ]);
 
         setMiembrosCount(miembros.length);
