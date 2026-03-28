@@ -1,19 +1,23 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { User, UserRole } from '../types';
 import {
-  Search, X, UserPlus, Filter, Users, AlertCircle,
-  MapPin, Phone, Calendar, Briefcase, Flame, Check,
+  Search, X, Filter, Users, AlertCircle,
+  MapPin, Phone, Calendar, Flame, Check,
   Mail, CreditCard, Building2, Droplet, Loader, WifiOff,
-  ChevronRight, UserCircle, Database,
+  UserCircle, Database, RefreshCw, HardDrive,
 } from 'lucide-react';
 import {
   getDirectorioMiembros, DirectorioMiembroFields,
   directorioIsActive,
 } from '../services/airtableService';
+import { getCache, setCache, clearCache, getCacheAge, getCacheSize } from '../services/cacheService';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type AirtableMember = { id: string; fields: DirectorioMiembroFields };
+
+const CACHE_KEY = 'tafe_directorio_miembros';
+const CACHE_TTL_H = 24;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -58,6 +62,9 @@ const Directory: React.FC<DirectoryProps> = ({ currentUser, onCreateProspect }) 
   const [loading, setLoading] = useState(false);
   const [loadProgress, setLoadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [cacheAge, setCacheAge] = useState<string | null>(null);
+  const [cacheSize, setCacheSize] = useState(0);
+  const [fromCache, setFromCache] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterFuente, setFilterFuente] = useState('');
   const [filterSexo, setFilterSexo] = useState('');
@@ -74,15 +81,36 @@ const Directory: React.FC<DirectoryProps> = ({ currentUser, onCreateProspect }) 
   const isOnline = directorioIsActive();
   const canCreate = currentUser.role !== UserRole.MIEMBRO;
 
-  useEffect(() => {
-    if (!isOnline) return;
+  const loadFromAirtable = async () => {
     setLoading(true);
     setError(null);
     setLoadProgress(0);
-    getDirectorioMiembros(n => setLoadProgress(n))
-      .then(data => setMembers(data))
-      .catch(() => setError('Error al cargar el directorio desde Airtable.'))
-      .finally(() => setLoading(false));
+    setFromCache(false);
+    try {
+      const data = await getDirectorioMiembros(n => setLoadProgress(n));
+      setMembers(data);
+      setCache(CACHE_KEY, data, CACHE_TTL_H);
+      setCacheAge(getCacheAge(CACHE_KEY));
+      setCacheSize(getCacheSize(CACHE_KEY));
+    } catch {
+      setError('Error al cargar desde Airtable. Verifica los permisos del token.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // Try cache first
+    const cached = getCache<AirtableMember[]>(CACHE_KEY);
+    if (cached && cached.length > 0) {
+      setMembers(cached);
+      setFromCache(true);
+      setCacheAge(getCacheAge(CACHE_KEY));
+      setCacheSize(getCacheSize(CACHE_KEY));
+      return;
+    }
+    // No cache → fetch from Airtable if configured
+    if (isOnline) loadFromAirtable();
   }, [isOnline]);
 
   const filtered = useMemo(() => {
@@ -134,13 +162,33 @@ const Directory: React.FC<DirectoryProps> = ({ currentUser, onCreateProspect }) 
           {loading ? (
             <div className="bg-white px-4 py-2 rounded-xl border border-slate-200 flex items-center gap-2">
               <Loader size={12} className="animate-spin text-turqui" />
-              <span className="text-[10px] font-bold text-slate-500">Cargando... {loadProgress} registros</span>
+              <span className="text-[10px] font-bold text-slate-500">Descargando... {loadProgress} registros</span>
+            </div>
+          ) : members.length > 0 ? (
+            <div className="flex items-center gap-2">
+              <div className={`bg-white px-3 py-2 rounded-xl border border-slate-200 flex items-center gap-2`}>
+                <HardDrive size={12} className={fromCache ? 'text-emerald-500' : 'text-turqui'} />
+                <span className="text-[10px] font-bold text-slate-500">
+                  {members.length.toLocaleString()} registros
+                  {fromCache ? ` · caché (${cacheAge})` : ' · Airtable'}
+                  {cacheSize > 0 && ` · ${cacheSize}KB`}
+                </span>
+              </div>
+              {isOnline && (
+                <button
+                  onClick={() => { clearCache(CACHE_KEY); loadFromAirtable(); }}
+                  title="Actualizar desde Airtable"
+                  className="p-2 bg-white border border-slate-200 rounded-xl hover:border-turqui hover:text-turqui transition-all"
+                >
+                  <RefreshCw size={14} className="text-slate-400" />
+                </button>
+              )}
             </div>
           ) : (
             <div className="bg-white px-4 py-2 rounded-xl border border-slate-200 flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500' : 'bg-amber-400'}`} />
+              <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-amber-400' : 'bg-slate-300'}`} />
               <span className="text-[10px] font-bold text-slate-500">
-                {isOnline ? `${members.length} registros — Airtable` : 'Airtable no configurado'}
+                {isOnline ? 'Sin datos — verifica permisos del token' : 'Airtable no configurado'}
               </span>
             </div>
           )}
