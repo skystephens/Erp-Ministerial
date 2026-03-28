@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { UserRole, Task, User, ApostolicAxis } from '../types';
+import { UserRole, Task, User } from '../types';
 import { 
   Plus, 
   Clock, 
@@ -14,16 +14,14 @@ import { processTaskRequest } from '../services/anthropicService';
 
 interface OperationsProps {
   role: UserRole;
-  axisSchema: any;
   tasks: Task[];
   setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
 }
 
-const Operations: React.FC<OperationsProps> = ({ role, axisSchema, tasks, setTasks }) => {
+const Operations: React.FC<OperationsProps> = ({ role, tasks, setTasks }) => {
   const [showModal, setShowModal] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
   const [isProcessingAi, setIsProcessingAi] = useState(false);
-  const [selectedAxisForTask, setSelectedAxisForTask] = useState<ApostolicAxis>('E5_ALABANZA_AV');
 
   const isMember = role === UserRole.MIEMBRO;
   // Fix: UserRole.PASTOR_MINISTERIOS replaced with UserRole.SUPERVISORA as per consolidated roles in types.ts
@@ -38,13 +36,13 @@ const Operations: React.FC<OperationsProps> = ({ role, axisSchema, tasks, setTas
       const newTask: Task = {
         id: `t${Date.now()}`,
         title: result.taskTitle || 'Nueva Tarea IA',
-        description: `Acción Plan TAFE: ${aiPrompt}`,
+        description: aiPrompt,
         ministry: result.ministry || 'CSI / Medios',
         assignedTo: 'u_auto',
         dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
         status: 'PENDING',
         requiredSkill: result.requiredSkill,
-        axis: selectedAxisForTask,
+        axis: 'E5_ALABANZA_AV',
         category: 'TECNICO'
       };
       setTasks([newTask, ...tasks]);
@@ -62,7 +60,7 @@ const Operations: React.FC<OperationsProps> = ({ role, axisSchema, tasks, setTas
             {isMember ? 'Mis Operaciones' : 'Gestión de Operaciones'}
           </h2>
           <p className="text-slate-500 text-sm italic">
-            {isMember ? 'Tus acciones vinculadas al engranaje apostólico.' : 'Control de tareas y cumplimiento del Plan TAFE.'}
+            {isMember ? 'Tus tareas activas del ministerio.' : 'Control de tareas del equipo de Medios.'}
           </p>
         </div>
         
@@ -96,27 +94,12 @@ const Operations: React.FC<OperationsProps> = ({ role, axisSchema, tasks, setTas
             <div className="bg-navy-tafe p-8 text-white relative">
               <h3 className="text-xl font-montserrat font-bold flex items-center gap-3">
                 <Layers size={24} className="text-turqui" />
-                Nueva Acción Plan TAFE
+                Nueva Tarea de Medios
               </h3>
-              <p className="text-white/60 text-sm mt-1">La IA asignará el requerimiento a un eje apostólico específico.</p>
+              <p className="text-white/60 text-sm mt-1">La IA asignará el requerimiento al ministerio correspondiente.</p>
               <button onClick={() => setShowModal(false)} className="absolute top-8 right-8 text-white/40 hover:text-white"><X size={24} /></button>
             </div>
             <div className="p-8 space-y-6">
-              <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-3">Seleccionar Eje Apostólico</label>
-                <div className="grid grid-cols-2 gap-2">
-                   {(Object.keys(axisSchema) as ApostolicAxis[]).map(key => (
-                     <button 
-                        key={key}
-                        onClick={() => setSelectedAxisForTask(key)}
-                        className={`p-3 rounded-xl border text-[10px] font-bold transition-all text-left ${selectedAxisForTask === key ? 'bg-turqui border-turqui text-white shadow-lg' : 'bg-slate-50 text-slate-400 border-slate-100'}`}
-                     >
-                        {axisSchema[key].label}
-                     </button>
-                   ))}
-                </div>
-              </div>
-              
               <div>
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-3">Describir Acción Requerida</label>
                 <textarea 

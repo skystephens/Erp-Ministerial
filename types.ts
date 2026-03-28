@@ -124,7 +124,7 @@ export interface CalendarEvent {
   status: 'CONFIRMED' | 'TENTATIVE' | 'PENDING';
   ministry: string;
   type: string;
-  axis: ApostolicAxis;
+  axis?: ApostolicAxis;
 }
 
 export type ContentChannel = 'FB' | 'INS' | 'YOU' | 'COMUNIDAD' | 'WEB' | 'EN_VIVO' | 'WHATSAPP';

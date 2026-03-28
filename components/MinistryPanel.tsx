@@ -234,7 +234,7 @@ const MinistryPanel: React.FC<MinistryPanelProps> = ({ user, tasks, onAddTask })
                     <div className={`w-2 h-10 rounded-full ${task.isUrgent ? 'bg-red-500' : 'bg-turqui'}`} />
                     <div>
                       <h4 className="text-sm font-bold text-slate-800">{task.title}</h4>
-                      <p className="text-[10px] text-slate-400 uppercase tracking-tighter">{task.category} • Eje: {task.axis?.split('_')[0]}</p>
+                      <p className="text-[10px] text-slate-400 uppercase tracking-tighter">{task.category}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">

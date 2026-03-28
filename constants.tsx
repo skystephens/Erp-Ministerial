@@ -79,7 +79,7 @@ export const NAV_SECTIONS: NavSection[] = [
     label: 'Medios & Comunicaciones',
     icon: <MonitorSpeaker size={16} />,
     items: [
-      { id: 'ministry_panel', label: 'Panel E5 — Medios', icon: <MonitorPlay size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
+      { id: 'ministry_panel', label: 'Panel Medios', icon: <MonitorPlay size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
       { id: 'media_strategy', label: 'Estrategia Medios', icon: <BarChart3 size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
       { id: 'content_manager', label: 'Gestor Contenidos', icon: <Newspaper size={18} /> },
       { id: 'operations', label: 'Tareas de Medios', icon: <Briefcase size={18} /> },
@@ -90,7 +90,6 @@ export const NAV_SECTIONS: NavSection[] = [
     label: 'Gestión Ministerial',
     icon: <Building2 size={16} />,
     items: [
-      { id: 'projects', label: 'Plan TAFE — 7 Ejes', icon: <Layers size={18} /> },
       { id: 'timebank', label: 'Banco de Tiempo', icon: <HeartHandshake size={18} /> },
       { id: 'calendar', label: 'Calendario 2026', icon: <CalendarDays size={18} /> },
     ],
@@ -112,6 +111,7 @@ export const NAV_SECTIONS: NavSection[] = [
     roles: [UserRole.SUPER_ADMIN],
     items: [
       { id: 'admin_mgmt', label: 'Gestión / Capas', icon: <ShieldCheck size={18} /> },
+      { id: 'projects', label: 'Plan TAFE — 7 Ejes', icon: <Layers size={18} />, roles: [UserRole.SUPER_ADMIN] },
     ],
   },
 ];

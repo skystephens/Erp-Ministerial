@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { UserRole, CalendarEvent, ApostolicAxis } from '../types';
+import { UserRole, CalendarEvent } from '../types';
 import { MINISTRIES } from '../constants';
 import { 
   ChevronLeft, 
@@ -24,19 +24,17 @@ const initialEvents: CalendarEvent[] = [
 ];
 
 const EVENT_TYPES = ['CELEBRACION', 'AYUNO', 'CONGRESO', 'SOCIAL', 'ADMIN', 'EVANGELISMO'];
-const AXES_LIST: ApostolicAxis[] = ['E1_EVANGELISMO', 'E2_INTERCESION', 'E3_CONSOLIDACION', 'E4_INFANCIA_DANZA', 'E5_ALABANZA_AV', 'E6_SOCIAL_CUIDADO', 'E7_JOVENES'];
 
 const CalendarView: React.FC<{ role: UserRole }> = ({ role }) => {
   const [events, setEvents] = useState<CalendarEvent[]>(initialEvents);
   const [activeMonthIndex, setActiveMonthIndex] = useState(new Date().getMonth());
   const [showProposeModal, setShowProposeModal] = useState(false);
-  
+
   const [newEvent, setNewEvent] = useState({
     title: '',
     date: '2026-01-01',
     ministry: MINISTRIES[0],
     type: EVENT_TYPES[0],
-    axis: AXES_LIST[0]
   });
 
   const isSuperAdminOrSupervisora = role === UserRole.SUPER_ADMIN || role === UserRole.SUPERVISORA;
@@ -194,12 +192,6 @@ const CalendarView: React.FC<{ role: UserRole }> = ({ role }) => {
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Ministerio Responsable</label>
                     <select className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none" value={newEvent.ministry} onChange={e => setNewEvent({...newEvent, ministry: e.target.value})}>
                        {MINISTRIES.map(m => <option key={m}>{m}</option>)}
-                    </select>
-                 </div>
-                 <div>
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Eje Apostólico Vinculado</label>
-                    <select className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none" value={newEvent.axis} onChange={e => setNewEvent({...newEvent, axis: e.target.value as ApostolicAxis})}>
-                       {AXES_LIST.map(a => <option key={a} value={a}>{a.replace('_', ' ')}</option>)}
                     </select>
                  </div>
               </div>

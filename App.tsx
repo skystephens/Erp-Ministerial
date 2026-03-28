@@ -198,7 +198,7 @@ const App: React.FC = () => {
         />
       );
       case 'projects': return <ProjectManager user={currentUser} tasks={tasks} schema={axisSchema} onUpdateSchema={setAxisSchema} />;
-      case 'operations': return <Operations role={currentUser.role} axisSchema={axisSchema} tasks={tasks} setTasks={setTasks} />;
+      case 'operations': return <Operations role={currentUser.role} tasks={tasks} setTasks={setTasks} />;
       case 'timebank': return <TimeBank role={currentUser.role} user={currentUser} />;
       case 'calendar': return <CalendarView role={currentUser.role} />;
       case 'pastoral_inbox': return <BuzonPeticiones user={currentUser} users={users} initialRequests={petitions} onUpdateRequests={setPetitions} />;
