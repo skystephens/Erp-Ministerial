@@ -109,6 +109,45 @@ async function fetchTable<T>(tableName: string, filterFormula?: string): Promise
   return data.records;
 }
 
+// Fetches ALL pages from any base (for tables with >100 records)
+async function fetchAllPages<T>(
+  baseId: string,
+  tableName: string,
+  filterFormula?: string,
+  onProgress?: (loaded: number) => void
+): Promise<AirtableRecord<T>[]> {
+  const key = import.meta.env.VITE_AIRTABLE_API_KEY as string;
+  if (!key || key.startsWith('tu_') || !baseId || baseId.startsWith('tu_')) {
+    console.warn(`fetchAllPages: credenciales no configuradas para base "${baseId}".`);
+    return [];
+  }
+
+  const allRecords: AirtableRecord<T>[] = [];
+  let offset: string | undefined;
+
+  do {
+    const params = new URLSearchParams();
+    params.set('pageSize', '100');
+    if (filterFormula) params.set('filterByFormula', filterFormula);
+    if (offset) params.set('offset', offset);
+
+    const url = `${BASE_URL}/${baseId}/${encodeURIComponent(tableName)}?${params.toString()}`;
+    const res = await fetch(url, { headers: getHeaders() });
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Airtable [${tableName}] GET ${res.status}: ${err}`);
+    }
+
+    const data: AirtableResponse<T> = await res.json();
+    allRecords.push(...data.records);
+    offset = data.offset;
+    if (onProgress) onProgress(allRecords.length);
+  } while (offset);
+
+  return allRecords;
+}
+
 async function createRecord<T>(tableName: string, fields: T): Promise<AirtableRecord<T>> {
   if (!isConfigured()) throw new Error('Airtable no configurado.');
 
@@ -230,6 +269,43 @@ export const updateHorarioCSI = (recordId: string, fields: Partial<HorarioCSIFie
 
 export const createHorarioCSI = (fields: HorarioCSIFields) =>
   createRecord<HorarioCSIFields>('Horario de Servicios CSI Medios', fields);
+
+// --- TAFE Base de Datos 2025 (base separada: appOhMA4UJPwKSGP2) ---
+export type DirectorioMiembroFields = {
+  'Nombre Completo': string;
+  'Dirección / Barrio'?: string;
+  Email?: string;
+  Cedula?: number;
+  Teléfono?: string;
+  'Sede de Iglesia TAFE'?: string;
+  'Fecha de Nacimiento'?: string;
+  'Tipo de Sangre'?: string;
+  Sexo?: string;
+  Fuente?: string;
+};
+
+const DIRECTORIO_BASE_ID = () =>
+  (import.meta.env.VITE_AIRTABLE_DIRECTORIO_BASE_ID as string) || '';
+
+export const directorioIsActive = (): boolean => {
+  const id = DIRECTORIO_BASE_ID();
+  return !!(id && !id.startsWith('tu_'));
+};
+
+export const getDirectorioMiembros = (onProgress?: (loaded: number) => void) =>
+  fetchAllPages<DirectorioMiembroFields>(
+    DIRECTORIO_BASE_ID(),
+    'TAFE Base de Datos 2025',
+    undefined,
+    onProgress
+  );
+
+export const searchDirectorioMiembros = (term: string) =>
+  fetchAllPages<DirectorioMiembroFields>(
+    DIRECTORIO_BASE_ID(),
+    'TAFE Base de Datos 2025',
+    `OR(SEARCH("${term}", {Nombre Completo}), SEARCH("${term}", {Teléfono}))`
+  );
 
 // --- Sync híbrido: crea tarea y registra aporte en Banco_Tiempo ---
 export const syncTareaConBanco = async (
