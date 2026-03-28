@@ -12,6 +12,8 @@ import {
   Pencil,
   Trash2,
   Eye,
+  FolderOpen,
+  ExternalLink,
 } from 'lucide-react';
 
 interface ContentManagerProps {
@@ -54,6 +56,7 @@ const EMPTY_PIECE: Omit<ContentPiece, 'id'> = {
   spellcheckBy: '',
   deliveryDate: '',
   campaign: '',
+  driveUrl: '',
 };
 
 const ContentManager: React.FC<ContentManagerProps> = ({ pieces, onAdd, onUpdate, onDelete, role }) => {
@@ -201,6 +204,7 @@ const ContentManager: React.FC<ContentManagerProps> = ({ pieces, onAdd, onUpdate
                 <th className="text-left px-5 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">Responsable</th>
                 <th className="text-left px-5 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">Rev. Ortogr.</th>
                 <th className="text-left px-5 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">Entrega</th>
+                <th className="text-left px-5 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Archivo</th>
                 <th className="px-5 py-4" />
               </tr>
             </thead>
@@ -237,6 +241,20 @@ const ContentManager: React.FC<ContentManagerProps> = ({ pieces, onAdd, onUpdate
                     <td className="px-5 py-4 text-slate-600 text-xs font-medium">{piece.responsible || '—'}</td>
                     <td className="px-5 py-4 text-slate-500 text-xs">{piece.spellcheckBy || '—'}</td>
                     <td className="px-5 py-4 text-slate-500 font-mono text-xs whitespace-nowrap">{piece.deliveryDate || '—'}</td>
+                    <td className="px-5 py-4">
+                      {piece.driveUrl ? (
+                        <a
+                          href={piece.driveUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-xl border border-emerald-200 hover:bg-emerald-100 transition-all"
+                        >
+                          <FolderOpen size={12} /> Drive
+                        </a>
+                      ) : (
+                        <span className="text-slate-300 text-xs">—</span>
+                      )}
+                    </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
                         <button onClick={() => setPreviewPiece(piece)} className="p-1.5 text-slate-400 hover:text-turqui rounded-lg hover:bg-turqui/10 transition-all">
@@ -418,6 +436,21 @@ const ContentManager: React.FC<ContentManagerProps> = ({ pieces, onAdd, onUpdate
                   className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm outline-none focus:ring-2 ring-turqui/30"
                 />
               </div>
+
+              {/* Google Drive */}
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                  <FolderOpen size={12} /> Enlace Google Drive
+                </label>
+                <input
+                  type="url"
+                  value={form.driveUrl}
+                  onChange={e => setForm(p => ({ ...p, driveUrl: e.target.value }))}
+                  placeholder="https://drive.google.com/file/d/..."
+                  className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm outline-none focus:ring-2 ring-turqui/30"
+                />
+                <p className="text-[10px] text-slate-400 mt-1.5 ml-1">Sube el archivo a Drive, copia el enlace compartido y pégalo aquí.</p>
+              </div>
             </div>
 
             <div className="flex justify-end gap-3 px-8 pb-8">
@@ -462,6 +495,21 @@ const ContentManager: React.FC<ContentManagerProps> = ({ pieces, onAdd, onUpdate
                   <span className="text-slate-700">{val}</span>
                 </div>
               ))}
+              <div className="flex gap-3 items-center">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest w-32 shrink-0">Archivo</span>
+                {previewPiece.driveUrl ? (
+                  <a
+                    href={previewPiece.driveUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-xl border border-emerald-200 hover:bg-emerald-100 transition-all"
+                  >
+                    <FolderOpen size={13} /> Abrir en Drive <ExternalLink size={11} />
+                  </a>
+                ) : (
+                  <span className="text-slate-400 text-sm">Sin archivo adjunto</span>
+                )}
+              </div>
               <div className="flex gap-3 items-center">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest w-32 shrink-0">Estado</span>
                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[10px] font-bold ${STATUS_CONFIG[previewPiece.status].bg} ${STATUS_CONFIG[previewPiece.status].text}`}>
