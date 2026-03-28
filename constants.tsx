@@ -147,25 +147,82 @@ export const MINISTRY_DETAILS: Record<string, { specialties: string[], checklist
   }
 };
 
+export const PASTORA_PRINCIPAL = {
+  name: "Martha Porras",
+  role: "COORDINADORA_GENERAL",
+  note: "Coordinadora General del Proyecto Evangelístico. Supervisa los 7 ejes. También lidera E1.",
+};
+
+export const PASTOR_PRINCIPAL = {
+  name: "Pr. Lancelot Lever",
+  role: "PASTOR_PRINCIPAL",
+};
+
 export const MINISTRY_HIERARCHY = [
-  { 
-    pastora: "Guillermina Martinez", 
+  {
+    pastora: "Martha Porras",
+    axis: "E1_EVANGELISMO" as const,
+    role: "SUPERVISORA",
+    ministries: [
+      { name: "Evangelismo", leader: "Martha Porras" },
+      { name: "Células", leader: "Por definir" },
+    ]
+  },
+  {
+    pastora: "María Mónica Bujato",
+    axis: "E2_INTERCESION" as const,
+    role: "SUPERVISORA",
+    ministries: [
+      { name: "Intercesión", leader: "María Mónica Bujato" },
+      { name: "Formación Bíblica", leader: "Por definir" },
+    ]
+  },
+  {
+    pastora: "Guillermina Martínez",
     axis: "E3_CONSOLIDACION" as const,
     role: "SUPERVISORA",
     ministries: [
-      { name: "Consolidación", leader: "Dario muñoz" },
-      { name: "Anfitriones", leader: "yinis rodriguez" }
-    ] 
+      { name: "Consolidación", leader: "Dario Muñoz" },
+      { name: "Anfitriones", leader: "Yinis Rodriguez" },
+      { name: "Guardianes", leader: "Por definir" },
+    ]
   },
-  { 
-    pastora: "Liseth Lever", 
+  {
+    pastora: "Claudia de la Oz",
+    axis: "E4_INFANCIA_DANZA" as const,
+    role: "SUPERVISORA",
+    ministries: [
+      { name: "Danza", leader: "Por definir" },
+      { name: "Escuela Infantil AMO", leader: "Por definir" },
+    ]
+  },
+  {
+    pastora: "Liseth Lever",
     axis: "E5_ALABANZA_AV" as const,
     role: "SUPERVISORA",
     ministries: [
       { name: "CSI / Medios", leader: "Sky Stephens" },
-      { name: "Alabanza", leader: "Liseth lever" }
-    ] 
-  }
+      { name: "Alabanza", leader: "Liseth Lever" },
+    ]
+  },
+  {
+    pastora: "Luz Elena Pretel",
+    axis: "E6_SOCIAL_CUIDADO" as const,
+    role: "SUPERVISORA",
+    ministries: [
+      { name: "Atención Social", leader: "Por definir" },
+      { name: "Cuidado Pastoral", leader: "Por definir" },
+    ]
+  },
+  {
+    pastora: "Zuleima Sandoval",
+    axis: "E7_JOVENES" as const,
+    role: "SUPERVISORA",
+    ministries: [
+      { name: "Adolescentes Oasis", leader: "Por definir" },
+      { name: "Generación de Joel", leader: "Por definir" },
+    ]
+  },
 ];
 
 export const AXIS_SCHEMA: Record<ApostolicAxis, any> = {
