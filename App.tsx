@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { UserRole, User, ApostolicAxis, Task, PrayerRequest, ContentPiece } from './types';
+import { UserRole, User, ApostolicAxis, Task, PrayerRequest, ContentPiece, Group } from './types';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
@@ -13,6 +13,7 @@ import ProjectManager from './components/ProjectManager';
 import BuzonPeticiones from './components/BuzonPeticiones';
 import MinistryPanel from './components/MinistryPanel';
 import MediaStrategy from './components/MediaStrategy';
+import Grupos, { initialGroups } from './components/Grupos';
 import ContentManager from './components/ContentManager';
 import Onboarding from './components/Onboarding';
 import { AXIS_SCHEMA as INITIAL_SCHEMA } from './constants';
@@ -24,6 +25,7 @@ const STORAGE_KEYS = {
   PETITIONS: 'tafe_erp_petitions',
   SCHEMA: 'tafe_erp_axis_schema',
   CONTENT: 'tafe_erp_content',
+  GROUPS: 'tafe_erp_groups',
 };
 
 const initialTasks: Task[] = [
@@ -64,6 +66,7 @@ const App: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [petitions, setPetitions] = useState<PrayerRequest[]>([]);
   const [contentPieces, setContentPieces] = useState<ContentPiece[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [notificationCount, setNotificationCount] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(true); 
   const [currentUser, setCurrentUser] = useState<User>(mockInitialUsers[0]);
@@ -87,6 +90,14 @@ const App: React.FC = () => {
 
     const savedContent = localStorage.getItem(STORAGE_KEYS.CONTENT);
     if (savedContent) setContentPieces(JSON.parse(savedContent));
+
+    const savedGroups = localStorage.getItem(STORAGE_KEYS.GROUPS);
+    if (savedGroups) {
+      const parsed = JSON.parse(savedGroups);
+      if (parsed.length > 0) { setGroups(parsed); } else { setGroups(initialGroups); }
+    } else {
+      setGroups(initialGroups);
+    }
   }, []);
 
   // PERSISTENCIA AUTOMÁTICA
@@ -95,6 +106,7 @@ const App: React.FC = () => {
   useEffect(() => { localStorage.setItem(STORAGE_KEYS.PETITIONS, JSON.stringify(petitions)); }, [petitions]);
   useEffect(() => { localStorage.setItem(STORAGE_KEYS.SCHEMA, JSON.stringify(axisSchema)); }, [axisSchema]);
   useEffect(() => { localStorage.setItem(STORAGE_KEYS.CONTENT, JSON.stringify(contentPieces)); }, [contentPieces]);
+  useEffect(() => { localStorage.setItem(STORAGE_KEYS.GROUPS, JSON.stringify(groups)); }, [groups]);
 
   const handleOnboardingComplete = (data: any) => {
     const newUser: User = {
@@ -190,6 +202,7 @@ const App: React.FC = () => {
       case 'timebank': return <TimeBank role={currentUser.role} user={currentUser} />;
       case 'calendar': return <CalendarView role={currentUser.role} />;
       case 'pastoral_inbox': return <BuzonPeticiones user={currentUser} initialRequests={petitions} onUpdateRequests={setPetitions} />;
+      case 'grupos': return <Grupos currentRole={currentUser.role} users={users} groups={groups} onUpdateGroups={setGroups} />;
       case 'directory': return <Directory currentUser={currentUser} onCreateProspect={handleCreateProspect} />;
       case 'admin_mgmt': return <AdminManagement users={users} tasks={tasks} petitions={petitions} onApprove={handleApproveUser} onImport={handleImportData} />;
       default: return <Dashboard role={currentUser.role} />;

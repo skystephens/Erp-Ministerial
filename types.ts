@@ -131,6 +131,24 @@ export type ContentChannel = 'FB' | 'INS' | 'YOU' | 'COMUNIDAD' | 'WEB' | 'EN_VI
 
 export type ContentStatus = 'PENDIENTE' | 'EN_CONSTRUCCION' | 'EN_REVISION' | 'PUBLICADO' | 'CANCELADO';
 
+export type GroupType = 'CELULA' | 'ORACION' | 'JOVENES' | 'ADOLESCENTES' | 'NUEVOS' | 'ESTUDIO';
+
+export interface Group {
+  id: string;
+  name: string;
+  type: GroupType;
+  leaderId: string;
+  leaderName: string;
+  day: string;
+  time: string;
+  location: string;
+  description?: string;
+  axis?: ApostolicAxis;
+  isActive: boolean;
+  memberIds: string[];
+  createdDate: string;
+}
+
 export interface ContentPiece {
   id: string;
   startDate: string;           // Fecha inicio

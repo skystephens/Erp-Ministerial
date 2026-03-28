@@ -15,6 +15,7 @@ import {
   MonitorSpeaker,
   Building2,
   UsersRound,
+  Flame,
 } from 'lucide-react';
 import { ApostolicAxis, UserRole } from './types';
 
@@ -99,6 +100,7 @@ export const NAV_SECTIONS: NavSection[] = [
     label: 'Personas',
     icon: <UsersRound size={16} />,
     items: [
+      { id: 'grupos', label: 'Grupos & Células', icon: <Flame size={18} /> },
       { id: 'directory', label: 'Directorio', icon: <Users size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
       { id: 'pastoral_inbox', label: 'Buzón Pastoral', icon: <Inbox size={18} /> },
     ],
