@@ -9,7 +9,8 @@ import {
   Bell,
   ChevronDown,
   ArrowRight,
-  Users
+  Users,
+  Camera,
 } from 'lucide-react';
 import { MINISTRY_DETAILS } from '../constants';
 import HorarioCSI from './HorarioCSI';
