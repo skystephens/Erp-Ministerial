@@ -169,74 +169,82 @@ export const MINISTRY_HIERARCHY = [
 ];
 
 export const AXIS_SCHEMA: Record<ApostolicAxis, any> = {
-  E1_EVANGELISMO: { 
-    label: 'E1: Evangelismo', 
-    status: 'Activo - Conquista', 
-    progress: 85, 
+  E1_EVANGELISMO: {
+    label: 'E1: Evangelismo y Células',
+    status: 'Activo - Conquista',
+    progress: 85,
     color: 'bg-turqui',
-    function: 'Conquistar nuevas almas para el Reino',
+    function: 'Conquistar nuevas almas para el Reino y formarlas en células',
     responsibilities: [
-      { name: 'Brigadas de Impacto', actions: ['Mapeo de zonas', 'Evangelismo callejero'] }
+      { name: 'Brigadas de Impacto', actions: ['Mapeo de zonas', 'Evangelismo callejero'] },
+      { name: 'Células', actions: ['Reuniones semanales', 'Seguimiento de nuevos'] }
     ]
   },
-  E2_INTERCESION: { 
-    label: 'E2: Intercesión', 
-    status: 'Sosteniendo - Ayuno', 
-    progress: 100, 
+  E2_INTERCESION: {
+    label: 'E2: Intercesión y Formación Bíblica',
+    status: 'Sosteniendo - Ayuno',
+    progress: 100,
     color: 'bg-navy-tafe',
-    function: 'Cobertura espiritual de la iglesia',
+    function: 'Cobertura espiritual de la iglesia y formación en la Palabra',
     responsibilities: [
-      { name: 'Vigilias', actions: ['Organización de turnos', 'Temas de oración'] }
+      { name: 'Vigilias', actions: ['Organización de turnos', 'Temas de oración'] },
+      { name: 'Formación Bíblica', actions: ['Estudios bíblicos', 'Escuelas de la Palabra'] }
     ]
   },
-  E3_CONSOLIDACION: { 
-    label: 'E3: Consolidación', 
-    status: 'Reteniendo Fruto', 
-    progress: 40, 
+  E3_CONSOLIDACION: {
+    label: 'E3: Consolidación, Anfitriones y Guardianes',
+    status: 'Reteniendo Fruto',
+    progress: 40,
     color: 'bg-emerald-500',
-    function: 'Cuidado y retención del nuevo creyente',
+    function: 'Cuidado, retención y protección del nuevo creyente',
     responsibilities: [
-      { name: 'Seguimiento', actions: ['Llamadas de bienvenida', 'Visitas'] }
+      { name: 'Consolidación', actions: ['Llamadas de bienvenida', 'Visitas pastorales'] },
+      { name: 'Anfitriones', actions: ['Recepción en cultos', 'Atención al visitante'] },
+      { name: 'Guardianes', actions: ['Seguridad y orden', 'Protección del templo'] }
     ]
   },
-  E4_INFANCIA_DANZA: { 
-    label: 'E4: Danza & Niños', 
-    status: 'Generacional', 
-    progress: 60, 
+  E4_INFANCIA_DANZA: {
+    label: 'E4: Danza y Escuela Infantil AMO',
+    status: 'Generacional',
+    progress: 60,
     color: 'bg-pink-500',
-    function: 'Formación de la nueva generación',
+    function: 'Formación espiritual de niños y expresión artística para Dios',
     responsibilities: [
-      { name: 'Escuela Dominical', actions: ['Material didáctico', 'Ensayos de danza'] }
+      { name: 'Escuela Infantil AMO', actions: ['Clases dominicales', 'Material didáctico'] },
+      { name: 'Danza', actions: ['Ensayos semanales', 'Presentaciones en cultos'] }
     ]
   },
-  E5_ALABANZA_AV: { 
-    label: 'E5: Alabanza & AV', 
-    status: 'Atmósfera Espiritual', 
-    progress: 90, 
+  E5_ALABANZA_AV: {
+    label: 'E5: Medios y Alabanza',
+    status: 'Atmósfera Espiritual',
+    progress: 90,
     color: 'bg-blue-500',
-    function: 'Creación de atmósferas de adoración',
+    function: 'Comunicaciones, producción audiovisual y adoración',
     responsibilities: [
-      { name: 'Producción Técnica', actions: ['Setup de sonido', 'Streaming'] }
+      { name: 'CSI / Medios', actions: ['Setup de sonido', 'Streaming', 'Diseño', 'Redes sociales'] },
+      { name: 'Alabanza', actions: ['Dirección de adoración', 'Ensayos', 'Producción musical'] }
     ]
   },
-  E6_SOCIAL_CUIDADO: { 
-    label: 'E6: Social & Saneamiento', 
-    status: 'Restauración', 
-    progress: 30, 
+  E6_SOCIAL_CUIDADO: {
+    label: 'E6: Atención Social y Cuidado Pastoral',
+    status: 'Restauración',
+    progress: 30,
     color: 'bg-amber-500',
-    function: 'Impacto social y ayuda al necesitado',
+    function: 'Impacto social, ayuda al necesitado y cuidado de la congregación',
     responsibilities: [
-      { name: 'Banco de Tiempo', actions: ['Gestión de talentos', 'Ayuda social'] }
+      { name: 'Atención Social', actions: ['Gestión de ayudas', 'Banco de Tiempo'] },
+      { name: 'Cuidado Pastoral', actions: ['Visitas a enfermos', 'Acompañamiento familiar'] }
     ]
   },
-  E7_JOVENES: { 
-    label: 'E7: Jóvenes', 
-    status: 'Continuidad', 
-    progress: 55, 
+  E7_JOVENES: {
+    label: 'E7: Adolescentes Oasis y Adultos Jóvenes Generación de Joel',
+    status: 'Continuidad',
+    progress: 55,
     color: 'bg-indigo-500',
-    function: 'Pastoreo de la juventud',
+    function: 'Pastoreo integral de adolescentes y jóvenes adultos',
     responsibilities: [
-      { name: 'Eventos Elohim', actions: ['Planificación de campamentos', 'Vigilias jóvenes'] }
+      { name: 'Adolescentes Oasis', actions: ['Reunión semanal sábados', 'Discipulado adolescente'] },
+      { name: 'Generación de Joel', actions: ['Jóvenes adultos', 'Liderazgo emergente'] }
     ]
   },
 };
