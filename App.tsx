@@ -201,7 +201,7 @@ const App: React.FC = () => {
       case 'operations': return <Operations role={currentUser.role} axisSchema={axisSchema} tasks={tasks} setTasks={setTasks} />;
       case 'timebank': return <TimeBank role={currentUser.role} user={currentUser} />;
       case 'calendar': return <CalendarView role={currentUser.role} />;
-      case 'pastoral_inbox': return <BuzonPeticiones user={currentUser} initialRequests={petitions} onUpdateRequests={setPetitions} />;
+      case 'pastoral_inbox': return <BuzonPeticiones user={currentUser} users={users} initialRequests={petitions} onUpdateRequests={setPetitions} />;
       case 'grupos': return <Grupos currentRole={currentUser.role} users={users} groups={groups} onUpdateGroups={setGroups} />;
       case 'directory': return <Directory currentUser={currentUser} onCreateProspect={handleCreateProspect} />;
       case 'admin_mgmt': return <AdminManagement users={users} tasks={tasks} petitions={petitions} onApprove={handleApproveUser} onImport={handleImportData} />;
