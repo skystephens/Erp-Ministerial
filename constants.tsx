@@ -4,17 +4,17 @@ import {
   LayoutDashboard,
   Briefcase,
   Users,
-  Settings,
-  Clock,
   HeartHandshake,
   ShieldCheck,
   CalendarDays,
   Layers,
   Inbox,
   MonitorPlay,
-  Zap,
   BarChart3,
-  Newspaper
+  Newspaper,
+  MonitorSpeaker,
+  Building2,
+  UsersRound,
 } from 'lucide-react';
 import { ApostolicAxis, UserRole } from './types';
 
@@ -57,19 +57,65 @@ export const MEDIA_STRATEGY_PROJECTS = [
   }
 ];
 
-export const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
-  { id: 'ministry_panel', label: 'Panel Ministerial', icon: <MonitorPlay size={20} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
-  { id: 'media_strategy', label: 'Estrategia Medios', icon: <BarChart3 size={20} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA] },
-  { id: 'content_manager', label: 'Gestor Contenidos', icon: <Newspaper size={20} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO, UserRole.MIEMBRO] },
-  { id: 'projects', label: 'Plan TAFE (Ejes)', icon: <Layers size={20} /> },
-  { id: 'operations', label: 'Tareas / Asistencia', icon: <Briefcase size={20} /> },
-  { id: 'timebank', label: 'Banco de Tiempo', icon: <HeartHandshake size={20} /> },
-  { id: 'calendar', label: 'Calendario 2026', icon: <CalendarDays size={20} /> },
-  { id: 'directory', label: 'Directorio', icon: <Users size={20} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA] },
-  { id: 'pastoral_inbox', label: 'Buzón Pastoral', icon: <Inbox size={20} /> },
-  { id: 'admin_mgmt', label: 'Gestión / Capas', icon: <ShieldCheck size={20} />, roles: [UserRole.SUPER_ADMIN] },
+export interface NavItem {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  roles?: UserRole[];
+}
+
+export interface NavSection {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  roles?: UserRole[];
+  items: NavItem[];
+}
+
+export const NAV_SECTIONS: NavSection[] = [
+  {
+    id: 'sec_medios',
+    label: 'Medios & Comunicaciones',
+    icon: <MonitorSpeaker size={16} />,
+    items: [
+      { id: 'media_strategy', label: 'Estrategia Medios', icon: <BarChart3 size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
+      { id: 'content_manager', label: 'Gestor Contenidos', icon: <Newspaper size={18} /> },
+      { id: 'operations', label: 'Tareas de Medios', icon: <Briefcase size={18} /> },
+    ],
+  },
+  {
+    id: 'sec_ministerial',
+    label: 'Gestión Ministerial',
+    icon: <Building2 size={16} />,
+    items: [
+      { id: 'ministry_panel', label: 'Panel Ministerial', icon: <MonitorPlay size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
+      { id: 'projects', label: 'Plan TAFE (Ejes)', icon: <Layers size={18} /> },
+      { id: 'timebank', label: 'Banco de Tiempo', icon: <HeartHandshake size={18} /> },
+      { id: 'calendar', label: 'Calendario 2026', icon: <CalendarDays size={18} /> },
+    ],
+  },
+  {
+    id: 'sec_personas',
+    label: 'Personas',
+    icon: <UsersRound size={16} />,
+    items: [
+      { id: 'directory', label: 'Directorio', icon: <Users size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
+      { id: 'pastoral_inbox', label: 'Buzón Pastoral', icon: <Inbox size={18} /> },
+    ],
+  },
+  {
+    id: 'sec_admin',
+    label: 'Administración',
+    icon: <ShieldCheck size={16} />,
+    roles: [UserRole.SUPER_ADMIN],
+    items: [
+      { id: 'admin_mgmt', label: 'Gestión / Capas', icon: <ShieldCheck size={18} /> },
+    ],
+  },
 ];
+
+// Kept for backward compatibility — flat list derived from sections
+export const NAV_ITEMS = NAV_SECTIONS.flatMap(s => s.items);
 
 export const MINISTRIES = [
   "CSI / Medios",
