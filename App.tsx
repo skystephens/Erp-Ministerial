@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { UserRole, User, ApostolicAxis, Task, PrayerRequest } from './types';
+import { UserRole, User, ApostolicAxis, Task, PrayerRequest, ContentPiece } from './types';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
@@ -13,6 +13,7 @@ import ProjectManager from './components/ProjectManager';
 import BuzonPeticiones from './components/BuzonPeticiones';
 import MinistryPanel from './components/MinistryPanel';
 import MediaStrategy from './components/MediaStrategy';
+import ContentManager from './components/ContentManager';
 import Onboarding from './components/Onboarding';
 import { AXIS_SCHEMA as INITIAL_SCHEMA } from './constants';
 import { airtableIsActive } from './services/airtableService';
@@ -21,7 +22,8 @@ const STORAGE_KEYS = {
   USERS: 'tafe_erp_users',
   TASKS: 'tafe_erp_tasks',
   PETITIONS: 'tafe_erp_petitions',
-  SCHEMA: 'tafe_erp_axis_schema'
+  SCHEMA: 'tafe_erp_axis_schema',
+  CONTENT: 'tafe_erp_content',
 };
 
 const initialTasks: Task[] = [
@@ -61,6 +63,7 @@ const App: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [petitions, setPetitions] = useState<PrayerRequest[]>([]);
+  const [contentPieces, setContentPieces] = useState<ContentPiece[]>([]);
   const [notificationCount, setNotificationCount] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(true); 
   const [currentUser, setCurrentUser] = useState<User>(mockInitialUsers[0]);
@@ -79,8 +82,11 @@ const App: React.FC = () => {
     else setTasks(initialTasks);
 
     if (savedPetitions) setPetitions(JSON.parse(savedPetitions));
-    
+
     if (savedSchema) setAxisSchema(JSON.parse(savedSchema));
+
+    const savedContent = localStorage.getItem(STORAGE_KEYS.CONTENT);
+    if (savedContent) setContentPieces(JSON.parse(savedContent));
   }, []);
 
   // PERSISTENCIA AUTOMÁTICA
@@ -88,6 +94,7 @@ const App: React.FC = () => {
   useEffect(() => { if (tasks.length) localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(tasks)); }, [tasks]);
   useEffect(() => { localStorage.setItem(STORAGE_KEYS.PETITIONS, JSON.stringify(petitions)); }, [petitions]);
   useEffect(() => { localStorage.setItem(STORAGE_KEYS.SCHEMA, JSON.stringify(axisSchema)); }, [axisSchema]);
+  useEffect(() => { localStorage.setItem(STORAGE_KEYS.CONTENT, JSON.stringify(contentPieces)); }, [contentPieces]);
 
   const handleOnboardingComplete = (data: any) => {
     const newUser: User = {
@@ -169,6 +176,15 @@ const App: React.FC = () => {
       case 'dashboard': return <Dashboard role={currentUser.role} />;
       case 'ministry_panel': return <MinistryPanel user={currentUser} tasks={tasks} onAddTask={handleAddTask} />;
       case 'media_strategy': return <MediaStrategy tasks={tasks} role={currentUser.role} />;
+      case 'content_manager': return (
+        <ContentManager
+          pieces={contentPieces}
+          role={currentUser.role}
+          onAdd={piece => setContentPieces(prev => [piece, ...prev])}
+          onUpdate={piece => setContentPieces(prev => prev.map(p => p.id === piece.id ? piece : p))}
+          onDelete={id => setContentPieces(prev => prev.filter(p => p.id !== id))}
+        />
+      );
       case 'projects': return <ProjectManager user={currentUser} tasks={tasks} schema={axisSchema} onUpdateSchema={setAxisSchema} />;
       case 'operations': return <Operations role={currentUser.role} axisSchema={axisSchema} tasks={tasks} setTasks={setTasks} />;
       case 'timebank': return <TimeBank role={currentUser.role} user={currentUser} />;

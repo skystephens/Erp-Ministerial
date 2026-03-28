@@ -126,3 +126,22 @@ export interface CalendarEvent {
   type: string;
   axis: ApostolicAxis;
 }
+
+export type ContentChannel = 'FB' | 'INS' | 'YOU' | 'COMUNIDAD' | 'WEB' | 'EN_VIVO' | 'WHATSAPP';
+
+export type ContentStatus = 'PENDIENTE' | 'EN_CONSTRUCCION' | 'EN_REVISION' | 'PUBLICADO' | 'CANCELADO';
+
+export interface ContentPiece {
+  id: string;
+  startDate: string;           // Fecha inicio
+  channels: ContentChannel[];  // Canal/plataforma
+  topic: string;               // Tema
+  copy: string;                // Descripcion/Copy
+  status: ContentStatus;
+  notes: string;               // Notas
+  responsible: string;         // Responsable
+  spellcheckBy: string;        // Revisión ortográfica
+  deliveryDate: string;        // Fecha entrega
+  campaign: string;            // Campaña / serie
+  axis?: ApostolicAxis;        // Eje apostólico relacionado
+}

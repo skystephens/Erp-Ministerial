@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  Briefcase, 
-  Users, 
-  Settings, 
-  Clock, 
+import {
+  LayoutDashboard,
+  Briefcase,
+  Users,
+  Settings,
+  Clock,
   HeartHandshake,
   ShieldCheck,
   CalendarDays,
@@ -13,7 +13,8 @@ import {
   Inbox,
   MonitorPlay,
   Zap,
-  BarChart3
+  BarChart3,
+  Newspaper
 } from 'lucide-react';
 import { ApostolicAxis, UserRole } from './types';
 
@@ -60,6 +61,7 @@ export const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
   { id: 'ministry_panel', label: 'Panel Ministerial', icon: <MonitorPlay size={20} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
   { id: 'media_strategy', label: 'Estrategia Medios', icon: <BarChart3 size={20} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA] },
+  { id: 'content_manager', label: 'Gestor Contenidos', icon: <Newspaper size={20} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO, UserRole.MIEMBRO] },
   { id: 'projects', label: 'Plan TAFE (Ejes)', icon: <Layers size={20} /> },
   { id: 'operations', label: 'Tareas / Asistencia', icon: <Briefcase size={20} /> },
   { id: 'timebank', label: 'Banco de Tiempo', icon: <HeartHandshake size={20} /> },
