@@ -182,6 +182,36 @@ async function updateRecord<T>(tableName: string, recordId: string, fields: Part
   return res.json();
 }
 
+async function updateRecordInBase<T>(baseId: string, tableName: string, recordId: string, fields: Partial<T>): Promise<AirtableRecord<T>> {
+  const key = import.meta.env.VITE_AIRTABLE_API_KEY as string;
+  if (!key || key.startsWith('tu_')) throw new Error('API key no configurada.');
+
+  const res = await fetch(`${BASE_URL}/${baseId}/${encodeURIComponent(tableName)}/${recordId}`, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fields }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Airtable [${tableName}] PATCH ${res.status}: ${err}`);
+  }
+
+  return res.json();
+}
+
+async function deleteRecord(tableName: string, recordId: string): Promise<void> {
+  if (!isConfigured()) throw new Error('Airtable no configurado.');
+  const res = await fetch(`${BASE_URL}/${BASE_ID}/${encodeURIComponent(tableName)}/${recordId}`, {
+    method: 'DELETE',
+    headers: getHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Airtable [${tableName}] DELETE ${res.status}: ${err}`);
+  }
+}
+
 // ─── API Pública ─────────────────────────────────────────────────────────────
 
 export const airtableIsActive = (): boolean => isConfigured();
@@ -271,7 +301,11 @@ export const createHorarioCSI = (fields: HorarioCSIFields) =>
   createRecord<HorarioCSIFields>('Horario de Servicios CSI Medios', fields);
 
 // --- TAFE Base de Datos 2025 (base separada: appOhMA4UJPwKSGP2) ---
+export type EstadoEspiritual = 'PROSPECTO' | 'VISITANTE' | 'NUEVO_CREYENTE' | 'CONSOLIDADO' | 'DISCIPULO' | 'LIDER';
+export type NivelAtencionCRM = 'PROSPECTO' | 'PRIMER_CONTACTO' | 'BIENVENIDA' | 'INTEGRADO' | 'DISCIPULO' | 'LIDER';
+
 export type DirectorioMiembroFields = {
+  // ── Datos personales (existentes) ──────────────────────────────────────────
   'Nombre Completo': string;
   'Dirección / Barrio'?: string;
   Email?: string;
@@ -282,6 +316,33 @@ export type DirectorioMiembroFields = {
   'Tipo de Sangre'?: string;
   Sexo?: string;
   Fuente?: string;
+
+  // ── Crecimiento espiritual (nuevos) ────────────────────────────────────────
+  Estado_Espiritual?: EstadoEspiritual;
+  Bautizado?: boolean;
+  Asistencia_Regular?: boolean;
+  Curso_Afirmando_Pasos?: boolean;
+  Escuela_NuevaVida_Cristo?: boolean;
+  Escuela_Liderazgo?: boolean;
+
+  // ── Célula y ministerio (nuevos) ───────────────────────────────────────────
+  Celula_Actual?: string;
+  Eje_Apostolico?: string;
+  Ministerio_Activo?: string;
+
+  // ── CRM / Seguimiento (nuevos) ─────────────────────────────────────────────
+  Nivel_Atencion?: NivelAtencionCRM;
+  Ultimo_Contacto?: string;
+  Responsable_Seguimiento?: string;
+  Notas_CRM?: string;
+
+  // ── Geográfico (nuevos) ────────────────────────────────────────────────────
+  Barrio?: string;
+  Sector_Evangelismo?: string;
+
+  // ── Pendientes (nuevos) ────────────────────────────────────────────────────
+  Peticion_Oracion?: string;
+  Pendiente_Ministerio?: string;
 };
 
 const DIRECTORIO_BASE_ID = () =>
@@ -306,6 +367,90 @@ export const searchDirectorioMiembros = (term: string) =>
     'TAFE Base de Datos 2025',
     `OR(SEARCH("${term}", {Nombre Completo}), SEARCH("${term}", {Teléfono}))`
   );
+
+export const updateDirectorioMiembro = (recordId: string, fields: Partial<DirectorioMiembroFields>) =>
+  updateRecordInBase<DirectorioMiembroFields>(
+    DIRECTORIO_BASE_ID(),
+    'TAFE Base de Datos 2025',
+    recordId,
+    fields
+  );
+
+// --- [OP] Eventos_Calendario (tabla a crear en Airtable: Titulo, Fecha, Estado, Ministerio, Tipo, Eje, RecurrenciaGrupoId, RecurrenciaEtiqueta) ---
+export type EventoCalendarioFields = {
+  Titulo: string;
+  Fecha: string;
+  Estado: 'CONFIRMED' | 'TENTATIVE' | 'PENDING';
+  Ministerio?: string;
+  Tipo?: string;
+  Eje?: string;
+  RecurrenciaGrupoId?: string;
+  RecurrenciaEtiqueta?: string;
+};
+
+export const getEventosCalendario = () =>
+  fetchTable<EventoCalendarioFields>('[OP] Eventos_Calendario');
+
+export const createEventoCalendario = (fields: EventoCalendarioFields) =>
+  createRecord<EventoCalendarioFields>('[OP] Eventos_Calendario', fields);
+
+export const updateEventoCalendario = (recordId: string, fields: Partial<EventoCalendarioFields>) =>
+  updateRecord<EventoCalendarioFields>('[OP] Eventos_Calendario', recordId, fields);
+
+export const deleteEventoCalendario = (recordId: string) =>
+  deleteRecord('[OP] Eventos_Calendario', recordId);
+
+// --- [OP] Asistencia (tabla existente en Airtable — campos reales verificados) ---
+// Campos: Name, Ministerio, Tipo_Servicio, Fecha, Hora, Registrado_Por, Fuente, Miembros_Presentes, Notas
+// Total_Presentes y Porcentaje_Asistencia son fórmulas de Airtable (no se envían)
+export type AsistenciaFields = {
+  Name: string;                  // Nombre del miembro presente (un registro por miembro)
+  Ministerio?: string;           // CSI / Medios | Alabanza | etc.
+  Tipo_Servicio?: string;        // Viernes 8 pm | Domingo 8 am | Domingo 10 am | etc.
+  Fecha?: string;                // YYYY-MM-DD
+  Hora?: string;                 // HH:MM
+  Registrado_Por?: string;       // Nombre de quien registra
+  Fuente?: string;               // 'APP' | 'FORMULARIO' | 'MANUAL'
+  Miembros_Presentes?: string;   // Nombre del miembro (replica Name para fórmulas)
+  Notas?: string;
+};
+
+export const getAsistencia = (filterFormula?: string) =>
+  fetchTable<AsistenciaFields>('[OP] Asistencia', filterFormula);
+
+export const getAsistenciaByMinisterio = (ministerio: string) =>
+  fetchTable<AsistenciaFields>('[OP] Asistencia', `{Ministerio}="${ministerio}"`);
+
+export const getAsistenciaByFecha = (fecha: string) =>
+  fetchTable<AsistenciaFields>('[OP] Asistencia', `{Fecha}="${fecha}"`);
+
+export const createAsistenciaRecord = (fields: AsistenciaFields) =>
+  createRecord<AsistenciaFields>('[OP] Asistencia', fields);
+
+// --- [CRM] Seguimiento (tabla a crear: Nombre_Miembro, Telefono, Nivel_Atencion, Responsable, Ultimo_Contacto, Proxima_Accion, Notas, Ministerio, Eje, Grupo_Origen) ---
+export type CRMSeguimientoFields = {
+  Nombre_Miembro: string;
+  Telefono?: string;
+  Email?: string;
+  Edad?: number;
+  Nivel_Atencion: string;
+  Responsable?: string;
+  Ultimo_Contacto?: string;
+  Proxima_Accion?: string;
+  Notas?: string;
+  Ministerio?: string;
+  Eje?: string;
+  Grupo_Origen?: string;
+};
+
+export const getCRMSeguimientos = () =>
+  fetchTable<CRMSeguimientoFields>('[CRM] Seguimiento');
+
+export const createCRMSeguimiento = (fields: CRMSeguimientoFields) =>
+  createRecord<CRMSeguimientoFields>('[CRM] Seguimiento', fields);
+
+export const updateCRMSeguimiento = (recordId: string, fields: Partial<CRMSeguimientoFields>) =>
+  updateRecord<CRMSeguimientoFields>('[CRM] Seguimiento', recordId, fields);
 
 // --- Sync híbrido: crea tarea y registra aporte en Banco_Tiempo ---
 export const syncTareaConBanco = async (

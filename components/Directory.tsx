@@ -5,10 +5,12 @@ import {
   MapPin, Phone, Calendar, Flame, Check,
   Mail, CreditCard, Building2, Droplet, Loader, WifiOff,
   UserCircle, Database, RefreshCw, HardDrive,
+  Pencil, Save, BookOpen, Target, Star,
 } from 'lucide-react';
 import {
   getDirectorioMiembros, DirectorioMiembroFields,
-  directorioIsActive,
+  directorioIsActive, updateDirectorioMiembro,
+  EstadoEspiritual, NivelAtencionCRM,
 } from '../services/airtableService';
 import { getCache, setCache, clearCache, getCacheAge, getCacheSize } from '../services/cacheService';
 
@@ -18,6 +20,29 @@ type AirtableMember = { id: string; fields: DirectorioMiembroFields };
 
 const CACHE_KEY = 'tafe_directorio_miembros';
 const CACHE_TTL_H = 24;
+
+const ESTADOS_ESPIRITUALES: EstadoEspiritual[] = ['PROSPECTO','VISITANTE','NUEVO_CREYENTE','CONSOLIDADO','DISCIPULO','LIDER'];
+const NIVELES_ATENCION: NivelAtencionCRM[] = ['PROSPECTO','PRIMER_CONTACTO','BIENVENIDA','INTEGRADO','DISCIPULO','LIDER'];
+const EJES = ['E1','E2','E3','E4','E5','E6','E7'];
+
+const estadoLabel: Record<EstadoEspiritual, string> = {
+  PROSPECTO: 'Prospecto', VISITANTE: 'Visitante', NUEVO_CREYENTE: 'Nuevo Creyente',
+  CONSOLIDADO: 'Consolidado', DISCIPULO: 'Discípulo', LIDER: 'Líder',
+};
+
+const nivelLabel: Record<NivelAtencionCRM, string> = {
+  PROSPECTO: 'Prospecto', PRIMER_CONTACTO: 'Primer Contacto', BIENVENIDA: 'Bienvenida',
+  INTEGRADO: 'Integrado', DISCIPULO: 'Discípulo', LIDER: 'Líder',
+};
+
+const nivelColor: Record<NivelAtencionCRM, string> = {
+  PROSPECTO:       'bg-slate-100 text-slate-600 border-slate-200',
+  PRIMER_CONTACTO: 'bg-amber-100 text-amber-700 border-amber-200',
+  BIENVENIDA:      'bg-blue-100 text-blue-700 border-blue-200',
+  INTEGRADO:       'bg-purple-100 text-purple-700 border-purple-200',
+  DISCIPULO:       'bg-turqui/10 text-turqui border-turqui/30',
+  LIDER:           'bg-navy-tafe/10 text-navy-tafe border-navy-tafe/20',
+};
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -69,7 +94,11 @@ const Directory: React.FC<DirectoryProps> = ({ currentUser, onCreateProspect }) 
   const [filterFuente, setFilterFuente] = useState('');
   const [filterSexo, setFilterSexo] = useState('');
   const [filterSede, setFilterSede] = useState('');
+  const [filterNivel, setFilterNivel] = useState('');
   const [selectedMember, setSelectedMember] = useState<AirtableMember | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editFields, setEditFields] = useState<Partial<DirectorioMiembroFields>>({});
+  const [saving, setSaving] = useState(false);
   const [showHarvestModal, setShowHarvestModal] = useState(false);
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 48;
@@ -127,8 +156,9 @@ const Directory: React.FC<DirectoryProps> = ({ currentUser, onCreateProspect }) 
     if (filterFuente) list = list.filter(m => m.fields.Fuente === filterFuente);
     if (filterSexo) list = list.filter(m => m.fields.Sexo === filterSexo);
     if (filterSede) list = list.filter(m => m.fields['Sede de Iglesia TAFE'] === filterSede);
+    if (filterNivel) list = list.filter(m => m.fields.Nivel_Atencion === filterNivel);
     return list;
-  }, [members, searchTerm, filterFuente, filterSexo, filterSede]);
+  }, [members, searchTerm, filterFuente, filterSexo, filterSede, filterNivel]);
 
   const paginated = filtered.slice(0, page * PAGE_SIZE);
   const hasMore = paginated.length < filtered.length;
@@ -147,8 +177,46 @@ const Directory: React.FC<DirectoryProps> = ({ currentUser, onCreateProspect }) 
     }
   };
 
-  const clearFilters = () => { setFilterFuente(''); setFilterSexo(''); setFilterSede(''); setSearchTerm(''); };
-  const hasFilters = !!(filterFuente || filterSexo || filterSede || searchTerm);
+  const clearFilters = () => { setFilterFuente(''); setFilterSexo(''); setFilterSede(''); setFilterNivel(''); setSearchTerm(''); };
+  const hasFilters = !!(filterFuente || filterSexo || filterSede || filterNivel || searchTerm);
+
+  const openEditMode = (m: AirtableMember) => {
+    setEditFields({
+      Estado_Espiritual: m.fields.Estado_Espiritual,
+      Nivel_Atencion: m.fields.Nivel_Atencion,
+      Celula_Actual: m.fields.Celula_Actual ?? '',
+      Eje_Apostolico: m.fields.Eje_Apostolico ?? '',
+      Ministerio_Activo: m.fields.Ministerio_Activo ?? '',
+      Bautizado: m.fields.Bautizado ?? false,
+      Asistencia_Regular: m.fields.Asistencia_Regular ?? false,
+      Curso_Afirmando_Pasos: m.fields.Curso_Afirmando_Pasos ?? false,
+      Escuela_NuevaVida_Cristo: m.fields.Escuela_NuevaVida_Cristo ?? false,
+      Escuela_Liderazgo: m.fields.Escuela_Liderazgo ?? false,
+      Ultimo_Contacto: m.fields.Ultimo_Contacto ?? '',
+      Responsable_Seguimiento: m.fields.Responsable_Seguimiento ?? '',
+      Notas_CRM: m.fields.Notas_CRM ?? '',
+      Peticion_Oracion: m.fields.Peticion_Oracion ?? '',
+      Pendiente_Ministerio: m.fields.Pendiente_Ministerio ?? '',
+    });
+    setIsEditing(true);
+  };
+
+  const handleSaveCRM = async () => {
+    if (!selectedMember) return;
+    setSaving(true);
+    try {
+      await updateDirectorioMiembro(selectedMember.id, editFields);
+      setMembers(prev => prev.map(m =>
+        m.id === selectedMember.id ? { ...m, fields: { ...m.fields, ...editFields } } : m
+      ));
+      setSelectedMember(prev => prev ? { ...prev, fields: { ...prev.fields, ...editFields } } : prev);
+      setIsEditing(false);
+    } catch (err) {
+      alert('Error al guardar: ' + String(err));
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="space-y-8 animate-fadeIn">
@@ -293,6 +361,19 @@ const Directory: React.FC<DirectoryProps> = ({ currentUser, onCreateProspect }) 
               ))}
             </div>
 
+            <div>
+              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1"><Target size={10} /> Nivel CRM</p>
+              {NIVELES_ATENCION.map(n => (
+                <button
+                  key={n}
+                  onClick={() => { setFilterNivel(filterNivel === n ? '' : n); setPage(1); }}
+                  className={`w-full text-left text-[11px] font-medium px-3 py-2 rounded-xl transition-all mb-1 ${filterNivel === n ? 'bg-navy-tafe text-white' : 'hover:bg-slate-50 text-slate-600'}`}
+                >
+                  {nivelLabel[n]}
+                </button>
+              ))}
+            </div>
+
             {hasFilters && (
               <button onClick={clearFilters} className="w-full text-[10px] font-bold text-slate-400 hover:text-slate-600 pt-2 border-t border-slate-100 flex items-center justify-center gap-1">
                 <X size={12} /> Limpiar filtros
@@ -395,8 +476,12 @@ const Directory: React.FC<DirectoryProps> = ({ currentUser, onCreateProspect }) 
       {selectedMember && (
         <div className="fixed inset-0 z-[60] flex justify-end bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
           <div className="w-full max-w-xl bg-white h-full shadow-2xl overflow-y-auto animate-slideLeft">
+            {/* Header */}
             <div className="bg-navy-tafe p-8 text-white relative">
-              <button onClick={() => setSelectedMember(null)} className="absolute top-6 right-6 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-all">
+              <button
+                onClick={() => { setSelectedMember(null); setIsEditing(false); }}
+                className="absolute top-6 right-6 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-all"
+              >
                 <X size={18} />
               </button>
               <div className="flex items-center gap-5">
@@ -414,18 +499,27 @@ const Directory: React.FC<DirectoryProps> = ({ currentUser, onCreateProspect }) 
                         {selectedMember.fields['Sede de Iglesia TAFE']}
                       </span>
                     )}
+                    {selectedMember.fields.Nivel_Atencion && (
+                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${nivelColor[selectedMember.fields.Nivel_Atencion]}`}>
+                        {nivelLabel[selectedMember.fields.Nivel_Atencion]}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
 
+            {/* Contenido */}
             <div className="p-8 space-y-6">
+
+              {/* Contacto */}
               <DetailSection title="Contacto">
                 <DetailRow icon={<Phone size={14} />} label="Teléfono" value={selectedMember.fields.Teléfono} />
                 <DetailRow icon={<Mail size={14} />} label="Email" value={selectedMember.fields.Email} />
                 <DetailRow icon={<MapPin size={14} />} label="Dirección / Barrio" value={selectedMember.fields['Dirección / Barrio']} />
               </DetailSection>
 
+              {/* Datos Personales */}
               <DetailSection title="Datos Personales">
                 <DetailRow icon={<CreditCard size={14} />} label="Cédula" value={selectedMember.fields.Cedula ? String(selectedMember.fields.Cedula) : undefined} />
                 <DetailRow icon={<Calendar size={14} />} label="Fecha de Nacimiento" value={selectedMember.fields['Fecha de Nacimiento']} />
@@ -433,10 +527,161 @@ const Directory: React.FC<DirectoryProps> = ({ currentUser, onCreateProspect }) 
                 <DetailRow icon={<Droplet size={14} />} label="Tipo de Sangre" value={selectedMember.fields['Tipo de Sangre']} />
               </DetailSection>
 
+              {/* Iglesia */}
               <DetailSection title="Iglesia">
                 <DetailRow icon={<Building2 size={14} />} label="Sede" value={selectedMember.fields['Sede de Iglesia TAFE']} />
                 <DetailRow icon={<Database size={14} />} label="Fuente" value={selectedMember.fields.Fuente} />
+                <DetailRow icon={<Target size={14} />} label="Ministerio Activo" value={selectedMember.fields.Ministerio_Activo} />
+                <DetailRow icon={<Star size={14} />} label="Célula" value={selectedMember.fields.Celula_Actual} />
+                <DetailRow icon={<BookOpen size={14} />} label="Eje Apostólico" value={selectedMember.fields.Eje_Apostolico} />
               </DetailSection>
+
+              {/* CRM / Seguimiento — vista o edición */}
+              {!isEditing ? (
+                <>
+                  <DetailSection title="Crecimiento Espiritual">
+                    <DetailRow icon={<Star size={14} />} label="Estado Espiritual" value={selectedMember.fields.Estado_Espiritual ? estadoLabel[selectedMember.fields.Estado_Espiritual] : undefined} />
+                    <DetailRow icon={<Target size={14} />} label="Nivel CRM" value={selectedMember.fields.Nivel_Atencion ? nivelLabel[selectedMember.fields.Nivel_Atencion] : undefined} />
+                    <CheckRow label="Bautizado" value={!!selectedMember.fields.Bautizado} />
+                    <CheckRow label="Asistencia Regular" value={!!selectedMember.fields.Asistencia_Regular} />
+                    <CheckRow label="Curso Afirmando los Pasos" value={!!selectedMember.fields.Curso_Afirmando_Pasos} />
+                    <CheckRow label="Escuela Nueva Vida en Cristo" value={!!selectedMember.fields.Escuela_NuevaVida_Cristo} />
+                    <CheckRow label="Escuela de Liderazgo" value={!!selectedMember.fields.Escuela_Liderazgo} />
+                  </DetailSection>
+
+                  {(selectedMember.fields.Responsable_Seguimiento || selectedMember.fields.Ultimo_Contacto || selectedMember.fields.Notas_CRM) && (
+                    <DetailSection title="Seguimiento CRM">
+                      <DetailRow icon={<Users size={14} />} label="Responsable" value={selectedMember.fields.Responsable_Seguimiento} />
+                      <DetailRow icon={<Calendar size={14} />} label="Último Contacto" value={selectedMember.fields.Ultimo_Contacto} />
+                      <DetailRow icon={<BookOpen size={14} />} label="Notas CRM" value={selectedMember.fields.Notas_CRM} />
+                    </DetailSection>
+                  )}
+
+                  {(selectedMember.fields.Peticion_Oracion || selectedMember.fields.Pendiente_Ministerio) && (
+                    <DetailSection title="Pendientes">
+                      <DetailRow icon={<Star size={14} />} label="Petición de Oración" value={selectedMember.fields.Peticion_Oracion} />
+                      <DetailRow icon={<AlertCircle size={14} />} label="Pendiente Ministerio" value={selectedMember.fields.Pendiente_Ministerio} />
+                    </DetailSection>
+                  )}
+
+                  {canCreate && (
+                    <button
+                      onClick={() => openEditMode(selectedMember)}
+                      className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-turqui/30 text-turqui font-bold text-sm rounded-2xl hover:bg-turqui/5 transition-all"
+                    >
+                      <Pencil size={16} /> Editar Seguimiento CRM
+                    </button>
+                  )}
+                </>
+              ) : (
+                /* ── Formulario de edición CRM ── */
+                <div className="space-y-5">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Editando Seguimiento</p>
+                    <button onClick={() => setIsEditing(false)} className="text-xs text-slate-400 hover:text-slate-600 font-bold flex items-center gap-1"><X size={12} /> Cancelar</button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Estado Espiritual</label>
+                      <select
+                        value={editFields.Estado_Espiritual ?? ''}
+                        onChange={e => setEditFields(p => ({ ...p, Estado_Espiritual: e.target.value as EstadoEspiritual || undefined }))}
+                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-1 ring-turqui"
+                      >
+                        <option value="">— Sin definir —</option>
+                        {ESTADOS_ESPIRITUALES.map(e => <option key={e} value={e}>{estadoLabel[e]}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Nivel CRM</label>
+                      <select
+                        value={editFields.Nivel_Atencion ?? ''}
+                        onChange={e => setEditFields(p => ({ ...p, Nivel_Atencion: e.target.value as NivelAtencionCRM || undefined }))}
+                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-1 ring-turqui"
+                      >
+                        <option value="">— Sin definir —</option>
+                        {NIVELES_ATENCION.map(n => <option key={n} value={n}>{nivelLabel[n]}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Célula Actual</label>
+                      <input type="text" value={editFields.Celula_Actual ?? ''} onChange={e => setEditFields(p => ({ ...p, Celula_Actual: e.target.value }))} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-1 ring-turqui" placeholder="Nombre de la célula" />
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Eje Apostólico</label>
+                      <select value={editFields.Eje_Apostolico ?? ''} onChange={e => setEditFields(p => ({ ...p, Eje_Apostolico: e.target.value || undefined }))} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-1 ring-turqui">
+                        <option value="">— Sin asignar —</option>
+                        {EJES.map(e => <option key={e} value={e}>{e}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Ministerio Activo</label>
+                    <input type="text" value={editFields.Ministerio_Activo ?? ''} onChange={e => setEditFields(p => ({ ...p, Ministerio_Activo: e.target.value }))} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-1 ring-turqui" placeholder="CSI / Medios, Alabanza..." />
+                  </div>
+
+                  <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-2">
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3">Formación</p>
+                    {([
+                      ['Bautizado', 'Bautizado'],
+                      ['Asistencia_Regular', 'Asistencia Regular'],
+                      ['Curso_Afirmando_Pasos', 'Curso Afirmando los Pasos'],
+                      ['Escuela_NuevaVida_Cristo', 'Escuela Nueva Vida en Cristo'],
+                      ['Escuela_Liderazgo', 'Escuela de Liderazgo'],
+                    ] as [keyof DirectorioMiembroFields, string][]).map(([key, label]) => (
+                      <label key={key} className="flex items-center gap-3 cursor-pointer py-1">
+                        <div
+                          onClick={() => setEditFields(p => ({ ...p, [key]: !p[key as keyof typeof p] }))}
+                          className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all cursor-pointer ${editFields[key] ? 'bg-turqui border-turqui' : 'border-slate-300 hover:border-turqui'}`}
+                        >
+                          {editFields[key] && <Check size={12} className="text-white" />}
+                        </div>
+                        <span className="text-xs font-medium text-slate-700">{label}</span>
+                      </label>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Último Contacto</label>
+                      <input type="date" value={editFields.Ultimo_Contacto ?? ''} onChange={e => setEditFields(p => ({ ...p, Ultimo_Contacto: e.target.value || undefined }))} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-1 ring-turqui" />
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Responsable Seguimiento</label>
+                      <input type="text" value={editFields.Responsable_Seguimiento ?? ''} onChange={e => setEditFields(p => ({ ...p, Responsable_Seguimiento: e.target.value }))} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-1 ring-turqui" placeholder="Nombre del responsable" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Notas CRM</label>
+                    <textarea rows={3} value={editFields.Notas_CRM ?? ''} onChange={e => setEditFields(p => ({ ...p, Notas_CRM: e.target.value }))} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-1 ring-turqui resize-none" placeholder="Observaciones de seguimiento..." />
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Petición de Oración</label>
+                    <textarea rows={2} value={editFields.Peticion_Oracion ?? ''} onChange={e => setEditFields(p => ({ ...p, Peticion_Oracion: e.target.value }))} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-1 ring-turqui resize-none" placeholder="Necesidad específica..." />
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Pendiente Ministerio</label>
+                    <textarea rows={2} value={editFields.Pendiente_Ministerio ?? ''} onChange={e => setEditFields(p => ({ ...p, Pendiente_Ministerio: e.target.value }))} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-1 ring-turqui resize-none" placeholder="Tarea o compromiso pendiente..." />
+                  </div>
+
+                  <button
+                    onClick={handleSaveCRM}
+                    disabled={saving}
+                    className="w-full flex items-center justify-center gap-2 py-4 bg-turqui text-white font-bold rounded-2xl shadow-lg shadow-turqui/20 hover:scale-[1.01] transition-all disabled:opacity-60"
+                  >
+                    {saving ? <Loader size={18} className="animate-spin" /> : <Save size={18} />}
+                    {saving ? 'Guardando en Airtable...' : 'Guardar Cambios'}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -534,5 +779,14 @@ const DetailRow: React.FC<{ icon: React.ReactNode; label: string; value?: string
     </div>
   );
 };
+
+const CheckRow: React.FC<{ label: string; value: boolean }> = ({ label, value }) => (
+  <div className="flex items-center gap-3">
+    <div className={`w-4 h-4 rounded flex items-center justify-center shrink-0 ${value ? 'bg-turqui' : 'bg-slate-200'}`}>
+      {value && <Check size={10} className="text-white" />}
+    </div>
+    <span className={`text-xs font-medium ${value ? 'text-slate-700' : 'text-slate-400'}`}>{label}</span>
+  </div>
+);
 
 export default Directory;

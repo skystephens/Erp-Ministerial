@@ -9,9 +9,10 @@ interface SidebarProps {
   setActiveTab: (tab: string) => void;
   currentRole: UserRole;
   onRoleChange: (role: UserRole) => void;
+  onLogout?: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, currentRole, onRoleChange }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, currentRole, onRoleChange, onLogout }) => {
   // Start with all sections open
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     sec_medios: true,
@@ -207,7 +208,10 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, currentRole,
 
       {/* Logout */}
       <div className="px-6 pb-6 shrink-0 border-t border-white/5">
-        <button className="flex items-center gap-3 px-4 py-3 w-full hover:bg-red-500/10 rounded-xl transition-all text-white/40 hover:text-red-400 group mt-4">
+        <button
+          onClick={onLogout}
+          className="flex items-center gap-3 px-4 py-3 w-full hover:bg-red-500/10 rounded-xl transition-all text-white/40 hover:text-red-400 group mt-4"
+        >
           <LogOut size={18} className="group-hover:rotate-12 transition-transform" />
           <span className="font-montserrat text-sm font-bold">Cerrar Sesión</span>
         </button>

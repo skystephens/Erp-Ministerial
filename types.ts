@@ -69,6 +69,7 @@ export interface User {
   gender?: string;
   employmentStatus?: string;
   geoPosition?: { lat: number; lng: number };
+  attentionLevel?: AttentionLevel;
 }
 
 export interface Task {
@@ -127,6 +128,68 @@ export interface CalendarEvent {
   axis?: ApostolicAxis;
   recurrenceGroupId?: string;
   recurrenceLabel?: string;
+}
+
+// ─── CRM / Atención a personas ────────────────────────────────────────────────
+
+export type AttentionLevel =
+  | 'PROSPECTO'
+  | 'PRIMER_CONTACTO'
+  | 'BIENVENIDA'
+  | 'INTEGRADO'
+  | 'DISCIPULO'
+  | 'LIDER';
+
+export interface CRMFollowUp {
+  id: string;
+  userId?: string;
+  memberName: string;
+  phone?: string;
+  email?: string;
+  age?: number;
+  attentionLevel: AttentionLevel;
+  responsibleName?: string;
+  lastContactDate?: string;
+  nextActionDate?: string;
+  notes: string;
+  ministry?: string;
+  axis?: ApostolicAxis;
+  originGroup?: string;
+  createdDate: string;
+  history: { date: string; action: string; by?: string; level?: AttentionLevel }[];
+}
+
+// ─── Asistencia ───────────────────────────────────────────────────────────────
+
+export type ServiceType =
+  | 'VIERNES_ENSENANZA'
+  | 'DOMINGO_SETUP'
+  | 'DOMINGO_PRINCIPAL'
+  | 'SABADO_JOVENES'
+  | 'CELULA'
+  | 'EVENTO_ESPECIAL'
+  | 'OTRO';
+
+export interface AttendanceRecord {
+  memberId?: string;
+  memberName: string;
+  isPresent: boolean;
+  notes?: string;
+}
+
+export interface AttendanceSession {
+  id: string;
+  date: string;
+  serviceType: ServiceType;
+  serviceLabel: string;
+  ministry: string;
+  axis?: ApostolicAxis;
+  records: AttendanceRecord[];
+  totalPresent: number;
+  totalAbsent: number;
+  notes?: string;
+  createdBy?: string;
+  createdDate: string;
 }
 
 export type ContentChannel = 'FB' | 'INS' | 'YOU' | 'COMUNIDAD' | 'WEB' | 'EN_VIVO' | 'WHATSAPP';

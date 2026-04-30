@@ -24,15 +24,31 @@ const RECURRENCE_BADGE: Record<string, string> = {
   'Cada mes':         '↺ Mensual',
 };
 
-// ─── Initial data ─────────────────────────────────────────────────────────────
+// ─── Initial data (exported for App.tsx) ─────────────────────────────────────
 
-const EVENT_TYPES = ['CELEBRACION', 'AYUNO', 'CONGRESO', 'SOCIAL', 'ADMIN', 'EVANGELISMO', 'SERVICIO'];
+export const EVENT_TYPES = ['CELEBRACION', 'AYUNO', 'CONGRESO', 'SOCIAL', 'ADMIN', 'EVANGELISMO', 'SERVICIO'];
 
-const initialEvents: CalendarEvent[] = [
-  { id: 'e1', title: 'Congreso Generación de Joel', date: '2026-02-15', status: 'CONFIRMED', ministry: 'Generación de Joel', type: 'CONGRESO' },
-  { id: 'e2', title: 'Ayuno General Oasis',          date: '2026-01-10', status: 'CONFIRMED', ministry: 'Intercesión',        type: 'AYUNO' },
-  { id: 'e3', title: 'Campamento Elohim',             date: '2026-06-20', status: 'TENTATIVE', ministry: 'Jóvenes (Elohim)',   type: 'CONGRESO' },
-  { id: 'e8', title: 'Vigilia por las Familias',      date: '2026-01-22', status: 'PENDING',   ministry: 'Intercesión',        type: 'AYUNO' },
+export const initialCalendarEvents: CalendarEvent[] = [
+  // Q1
+  { id: 'e_01', title: 'Ayuno General Oasis',              date: '2026-01-10', status: 'CONFIRMED', ministry: 'Intercesión',        type: 'AYUNO' },
+  { id: 'e_02', title: 'Vigilia por las Familias',         date: '2026-01-22', status: 'CONFIRMED', ministry: 'Intercesión',        type: 'AYUNO' },
+  { id: 'e_03', title: 'Campaña Evangelismo Sector Norte', date: '2026-02-07', status: 'CONFIRMED', ministry: 'Evangelismo',        type: 'EVANGELISMO' },
+  { id: 'e_04', title: 'Congreso Generación de Joel',      date: '2026-02-15', status: 'CONFIRMED', ministry: 'Generación de Joel', type: 'CONGRESO' },
+  { id: 'e_05', title: 'Escuela de Líderes Q1',            date: '2026-03-14', status: 'CONFIRMED', ministry: 'Formación Bíblica',  type: 'ADMIN' },
+  // Q2
+  { id: 'e_06', title: 'Vigilia Semana Santa — 40 Horas',  date: '2026-04-01', status: 'CONFIRMED', ministry: 'Intercesión',        type: 'AYUNO' },
+  { id: 'e_07', title: 'Congreso de Danza Profética',      date: '2026-04-18', status: 'TENTATIVE', ministry: 'Danza',              type: 'CONGRESO' },
+  { id: 'e_08', title: 'Campaña Evangelismo Sector Sur',   date: '2026-05-02', status: 'PENDING',   ministry: 'Evangelismo',        type: 'EVANGELISMO' },
+  { id: 'e_09', title: 'Campamento Elohim Adultos Jóvenes',date: '2026-06-20', status: 'TENTATIVE', ministry: 'Jóvenes (Elohim)',   type: 'CONGRESO' },
+  // Q3
+  { id: 'e_10', title: 'Feria Social — E6 Atención Social',date: '2026-07-11', status: 'PENDING',   ministry: 'Atención Social',    type: 'SOCIAL' },
+  { id: 'e_11', title: 'Congreso General TAFE 2026',       date: '2026-08-01', status: 'CONFIRMED', ministry: 'CSI / Medios',       type: 'CONGRESO' },
+  { id: 'e_12', title: 'Campaña Cosecha de Almas Q3',      date: '2026-09-05', status: 'PENDING',   ministry: 'Evangelismo',        type: 'EVANGELISMO' },
+  // Q4
+  { id: 'e_13', title: 'Escuela de Líderes Q4',            date: '2026-10-03', status: 'PENDING',   ministry: 'Formación Bíblica',  type: 'ADMIN' },
+  { id: 'e_14', title: 'Celebración Aniversario TAFE',     date: '2026-11-08', status: 'CONFIRMED', ministry: 'CSI / Medios',       type: 'CELEBRACION' },
+  { id: 'e_15', title: 'Congreso de Cierre 2026',          date: '2026-12-05', status: 'TENTATIVE', ministry: 'CSI / Medios',       type: 'CONGRESO' },
+  { id: 'e_16', title: 'Vigilia de Año Nuevo — Paso a 2027', date: '2026-12-31', status: 'CONFIRMED', ministry: 'Intercesión',      type: 'CELEBRACION' },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -87,8 +103,13 @@ function generateRecurringEvents(
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-const CalendarView: React.FC<{ role: UserRole }> = ({ role }) => {
-  const [events, setEvents] = useState<CalendarEvent[]>(initialEvents);
+interface CalendarViewProps {
+  role: UserRole;
+  events: CalendarEvent[];
+  setEvents: React.Dispatch<React.SetStateAction<CalendarEvent[]>>;
+}
+
+const CalendarView: React.FC<CalendarViewProps> = ({ role, events, setEvents }) => {
   const [activeMonthIndex, setActiveMonthIndex] = useState(new Date().getMonth());
   const [showModal, setShowModal] = useState(false);
 

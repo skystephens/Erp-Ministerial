@@ -16,6 +16,8 @@ import {
   Building2,
   UsersRound,
   Flame,
+  ClipboardList,
+  UserCheck,
 } from 'lucide-react';
 import { ApostolicAxis, UserRole } from './types';
 
@@ -92,6 +94,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { id: 'timebank', label: 'Banco de Tiempo', icon: <HeartHandshake size={18} /> },
       { id: 'calendar', label: 'Calendario 2026', icon: <CalendarDays size={18} /> },
+      { id: 'asistencia', label: 'Asistencia', icon: <ClipboardList size={18} /> },
     ],
   },
   {
@@ -101,6 +104,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { id: 'grupos', label: 'Grupos & Células', icon: <Flame size={18} /> },
       { id: 'directory', label: 'Directorio', icon: <Users size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
+      { id: 'crm_seguimiento', label: 'CRM Seguimiento', icon: <UserCheck size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
       { id: 'pastoral_inbox', label: 'Buzón Pastoral', icon: <Inbox size={18} /> },
     ],
   },
