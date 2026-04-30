@@ -25,8 +25,8 @@ const QUICK_ROLES = [
   },
   {
     role: UserRole.LIDER_MINISTERIO,
-    label: 'Líder Ministerio',
-    sub: 'Panel de operaciones CSI',
+    label: 'Developer / CSI',
+    sub: 'Acceso total · Líder Medios',
     icon: MonitorPlay,
     colorClass: 'group-hover:text-[#49D1C5]',
     hint: 'sky',

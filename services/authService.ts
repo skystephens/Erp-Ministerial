@@ -48,7 +48,7 @@ const DEMO_ACCOUNTS: (Omit<AuthSession, 'loginTime'> & { username: string; passw
     password: 'tafe2026',
     userId: 'u_sky',
     name: 'Sky Stephens',
-    role: UserRole.LIDER_MINISTERIO,
+    role: UserRole.SUPER_ADMIN,
     ministry: 'CSI / Medios',
     axis: 'E5_ALABANZA_AV',
   },
@@ -107,7 +107,7 @@ export const quickLogin = (role: UserRole): AuthSession => {
     [UserRole.LIDER_MINISTERIO]: {
       userId: 'u_sky',
       name: 'Sky Stephens',
-      role: UserRole.LIDER_MINISTERIO,
+      role: UserRole.SUPER_ADMIN,
       ministry: 'CSI / Medios',
       axis: 'E5_ALABANZA_AV' as ApostolicAxis,
     },

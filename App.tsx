@@ -246,7 +246,11 @@ const App: React.FC = () => {
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-[10px] text-slate-400 font-bold hidden md:block">
-                  {currentUser.name} · {currentUser.role.replace('_', ' ')}
+                  {currentUser.name} · {
+                    currentUser.id === 'u_sky'
+                      ? 'Developer · CSI/Medios'
+                      : currentUser.role.replace(/_/g, ' ')
+                  }
                 </span>
                 <button
                   onClick={handleLogout}
