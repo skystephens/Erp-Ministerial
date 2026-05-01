@@ -225,6 +225,7 @@ const App: React.FC = () => {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         currentRole={currentUser.role}
+        currentUserMinistry={currentUser.ministry}
         onRoleChange={(r) => setCurrentUser(prev => prev ? { ...prev, role: r } : prev)}
         onLogout={handleLogout}
       />

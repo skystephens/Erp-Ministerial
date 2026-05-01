@@ -8,11 +8,12 @@ interface SidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   currentRole: UserRole;
+  currentUserMinistry?: string;
   onRoleChange: (role: UserRole) => void;
   onLogout?: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, currentRole, onRoleChange, onLogout }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, currentRole, currentUserMinistry, onRoleChange, onLogout }) => {
   // Start with all sections open
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     sec_medios: true,
@@ -25,8 +26,12 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, currentRole,
   const toggleSection = (id: string) =>
     setOpenSections(prev => ({ ...prev, [id]: !prev[id] }));
 
-  const canSeeSection = (roles?: UserRole[]) =>
-    !roles || roles.includes(currentRole);
+  const canSeeSection = (sectionId: string, roles?: UserRole[]) => {
+    if (!roles || roles.includes(currentRole)) return true;
+    // MIEMBRO del ministerio de medios puede ver esa sección aunque no tenga el rol
+    if (sectionId === 'sec_medios' && currentUserMinistry === 'CSI / Medios') return true;
+    return false;
+  };
 
   const canSeeItem = (roles?: UserRole[]) =>
     !roles || roles.includes(currentRole);
@@ -50,9 +55,23 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, currentRole,
   return (
     <aside className="w-64 bg-navy-tafe text-white flex flex-col h-full shadow-2xl z-20">
       {/* Logo */}
-      <div className="p-8 flex items-center gap-3 shrink-0">
-        <div className="bg-white/10 p-2.5 rounded-xl border border-white/10 shadow-inner">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#49D1C5" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <div className="px-6 pt-6 pb-4 flex items-center gap-3 shrink-0">
+        <img
+          src="/logo-tafe-circle.png"
+          alt="TAFE"
+          className="w-10 h-10 object-contain shrink-0"
+          onError={e => {
+            const t = e.currentTarget;
+            t.style.display = 'none';
+            const next = t.nextElementSibling as HTMLElement | null;
+            if (next) next.style.display = 'flex';
+          }}
+        />
+        <div
+          className="w-10 h-10 bg-white/10 rounded-xl border border-white/10 items-center justify-center shrink-0"
+          style={{ display: 'none' }}
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#49D1C5" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
             <polyline points="9 22 9 12 15 12 15 22"/>
           </svg>
@@ -83,7 +102,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, currentRole,
 
         {/* Secciones */}
         {NAV_SECTIONS.map(section => {
-          if (!canSeeSection(section.roles)) return null;
+          if (!canSeeSection(section.id, section.roles)) return null;
 
           const visibleItems = section.items.filter(item => canSeeItem(item.roles));
           if (visibleItems.length === 0) return null;
@@ -162,7 +181,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, currentRole,
             <div className="mt-1 ml-2 pl-3 border-l border-white/10 max-h-56 overflow-y-auto custom-scrollbar pr-1 space-y-3 py-2 animate-fadeIn">
               {currentRole === UserRole.MIEMBRO ? (
                 <button className="w-full text-left px-3 py-2 text-[11px] font-bold text-turqui bg-turqui/10 rounded-lg">
-                  CSI / Medios (Asignado)
+                  {currentUserMinistry ?? 'Sin ministerio asignado'}
                 </button>
               ) : (
                 getVisibleMinistries().map((group, idx) => (

@@ -80,11 +80,13 @@ export const NAV_SECTIONS: NavSection[] = [
     id: 'sec_medios',
     label: 'Medios & Comunicaciones',
     icon: <MonitorSpeaker size={16} />,
+    // Solo visible para CSI/Medios — Sidebar también permite MIEMBRO con ese ministerio
+    roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO],
     items: [
-      { id: 'ministry_panel', label: 'Panel Medios', icon: <MonitorPlay size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
-      { id: 'media_strategy', label: 'Estrategia Medios', icon: <BarChart3 size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
-      { id: 'content_manager', label: 'Gestor Contenidos', icon: <Newspaper size={18} /> },
-      { id: 'operations', label: 'Tareas de Medios', icon: <Briefcase size={18} /> },
+      { id: 'ministry_panel',  label: 'Panel Medios',      icon: <MonitorPlay size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
+      { id: 'media_strategy',  label: 'Estrategia Medios', icon: <BarChart3 size={18} />,   roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
+      { id: 'content_manager', label: 'Gestor Contenidos', icon: <Newspaper size={18} />,   roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
+      { id: 'operations',      label: 'Tareas de Medios',  icon: <Briefcase size={18} />,   roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
     ],
   },
   {
@@ -92,9 +94,10 @@ export const NAV_SECTIONS: NavSection[] = [
     label: 'Gestión Ministerial',
     icon: <Building2 size={16} />,
     items: [
-      { id: 'timebank', label: 'Banco de Tiempo', icon: <HeartHandshake size={18} /> },
-      { id: 'calendar', label: 'Calendario 2026', icon: <CalendarDays size={18} /> },
-      { id: 'asistencia', label: 'Asistencia', icon: <ClipboardList size={18} /> },
+      { id: 'timebank',    label: 'Banco de Tiempo', icon: <HeartHandshake size={18} /> },
+      { id: 'calendar',    label: 'Calendario 2026', icon: <CalendarDays size={18} /> },
+      // Asistencia solo para quienes lideran un ministerio
+      { id: 'asistencia',  label: 'Asistencia',      icon: <ClipboardList size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
     ],
   },
   {
@@ -102,10 +105,10 @@ export const NAV_SECTIONS: NavSection[] = [
     label: 'Personas',
     icon: <UsersRound size={16} />,
     items: [
-      { id: 'grupos', label: 'Grupos & Células', icon: <Flame size={18} /> },
-      { id: 'directory', label: 'Directorio', icon: <Users size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
-      { id: 'crm_seguimiento', label: 'CRM Seguimiento', icon: <UserCheck size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
-      { id: 'pastoral_inbox', label: 'Buzón Pastoral', icon: <Inbox size={18} /> },
+      { id: 'grupos',          label: 'Grupos & Células', icon: <Flame size={18} /> },
+      { id: 'directory',       label: 'Directorio',       icon: <Users size={18} />,    roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
+      { id: 'crm_seguimiento', label: 'CRM Seguimiento',  icon: <UserCheck size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
+      { id: 'pastoral_inbox',  label: 'Buzón Pastoral',   icon: <Inbox size={18} /> },
     ],
   },
   {
@@ -114,8 +117,8 @@ export const NAV_SECTIONS: NavSection[] = [
     icon: <ShieldCheck size={16} />,
     roles: [UserRole.SUPER_ADMIN],
     items: [
-      { id: 'admin_mgmt', label: 'Gestión / Capas', icon: <ShieldCheck size={18} /> },
-      { id: 'projects', label: 'Plan TAFE — 7 Ejes', icon: <Layers size={18} />, roles: [UserRole.SUPER_ADMIN] },
+      { id: 'admin_mgmt', label: 'Gestión / Capas',    icon: <ShieldCheck size={18} /> },
+      { id: 'projects',   label: 'Plan TAFE — 7 Ejes', icon: <Layers size={18} />, roles: [UserRole.SUPER_ADMIN] },
     ],
   },
 ];
