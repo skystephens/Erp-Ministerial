@@ -8,12 +8,23 @@ import { airtableIsActive, createAsistenciaRecord } from '../services/airtableSe
 
 // ─── Datos del formulario real de Google Forms / Airtable ────────────────────
 
-// Equipo CSI Medios y Alabanza — miembros del dropdown del formulario actual
 const CSI_MEMBERS = [
   'Heidy', 'Shungu', 'Jordany', 'Guillermo', 'Jimmy',
   'Jefferson', 'Jhony', 'Jorge', 'Juan Diego', 'Emmanuel',
   'Karen', 'Ares', 'Luis Carlos', 'Sky',
 ];
+
+const ALABANZA_MEMBERS = [
+  'Liseth', 'Martha', 'Jessica', 'Andrea', 'Alvaro',
+  'Joshua', 'Andres', 'Jorge', 'Felicia', 'Claudia',
+  'Lizeth R.', 'Damaris', 'Jordy',
+];
+
+// Mapa de listas fijas por ministerio (ministerios con datos reales hardcoded)
+const MINISTRY_MEMBERS: Record<string, string[]> = {
+  'CSI / Medios': CSI_MEMBERS,
+  'Alabanza': ALABANZA_MEMBERS,
+};
 
 // Tipos de servicio del formulario Google Forms
 const SERVICE_OPTIONS = [
@@ -85,11 +96,10 @@ const Asistencia: React.FC<AsistenciaProps> = ({
 
   // Construir lista de miembros según ministerio seleccionado
   const buildMemberList = (ministry: string): AttendanceRecord[] => {
-    // Si es CSI / Medios o Alabanza, usar lista real del formulario
-    if (ministry === 'CSI / Medios' || ministry === 'Alabanza') {
-      return CSI_MEMBERS.map(name => ({ memberName: name, isPresent: false }));
+    const fixedList = MINISTRY_MEMBERS[ministry];
+    if (fixedList) {
+      return fixedList.map(name => ({ memberName: name, isPresent: false }));
     }
-    // Para otros ministerios, usar miembros aprobados de ese ministerio
     const ministryUsers = users.filter(
       u => u.status === 'APPROVED' && u.ministry === ministry
     );
