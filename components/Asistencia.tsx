@@ -5,26 +5,9 @@ import {
   Save, Eye, Trash2, Search, UserPlus, BarChart2,
 } from 'lucide-react';
 import { airtableIsActive, createAsistenciaRecord } from '../services/airtableService';
+import { MINISTRY_MEMBERS } from '../constants';
 
 // ─── Datos del formulario real de Google Forms / Airtable ────────────────────
-
-const CSI_MEMBERS = [
-  'Heidy', 'Shungu', 'Jordany', 'Guillermo', 'Jimmy',
-  'Jefferson', 'Jhony', 'Jorge', 'Juan Diego', 'Emmanuel',
-  'Karen', 'Ares', 'Luis Carlos', 'Sky',
-];
-
-const ALABANZA_MEMBERS = [
-  'Liseth', 'Martha', 'Jessica', 'Andrea', 'Alvaro',
-  'Joshua', 'Andres', 'Jorge', 'Felicia', 'Claudia',
-  'Lizeth R.', 'Damaris', 'Jordy',
-];
-
-// Mapa de listas fijas por ministerio (ministerios con datos reales hardcoded)
-const MINISTRY_MEMBERS: Record<string, string[]> = {
-  'CSI / Medios': CSI_MEMBERS,
-  'Alabanza': ALABANZA_MEMBERS,
-};
 
 // Tipos de servicio del formulario Google Forms
 const SERVICE_OPTIONS = [

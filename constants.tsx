@@ -18,6 +18,7 @@ import {
   Flame,
   ClipboardList,
   UserCheck,
+  LayoutGrid,
 } from 'lucide-react';
 import { ApostolicAxis, UserRole } from './types';
 
@@ -94,10 +95,12 @@ export const NAV_SECTIONS: NavSection[] = [
     label: 'Gestión Ministerial',
     icon: <Building2 size={16} />,
     items: [
-      { id: 'timebank',    label: 'Banco de Tiempo', icon: <HeartHandshake size={18} /> },
-      { id: 'calendar',    label: 'Calendario 2026', icon: <CalendarDays size={18} /> },
+      { id: 'timebank',       label: 'Banco de Tiempo', icon: <HeartHandshake size={18} /> },
+      { id: 'calendar',       label: 'Calendario 2026', icon: <CalendarDays size={18} /> },
+      // Panel propio del ministerio asignado — visible para miembro y líder
+      { id: 'mi_ministerio',  label: 'Mi Ministerio',   icon: <LayoutGrid size={18} />, roles: [UserRole.MIEMBRO, UserRole.LIDER_MINISTERIO] },
       // Asistencia solo para quienes lideran un ministerio
-      { id: 'asistencia',  label: 'Asistencia',      icon: <ClipboardList size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
+      { id: 'asistencia',     label: 'Asistencia',      icon: <ClipboardList size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
     ],
   },
   {
@@ -135,6 +138,20 @@ export const MINISTRIES = [
   "Células",
   "Intercesión"
 ];
+
+// Listas fijas de miembros por ministerio (fuente de verdad compartida)
+export const MINISTRY_MEMBERS: Record<string, string[]> = {
+  'CSI / Medios': [
+    'Heidy', 'Shungu', 'Jordany', 'Guillermo', 'Jimmy',
+    'Jefferson', 'Jhony', 'Jorge', 'Juan Diego', 'Emmanuel',
+    'Karen', 'Ares', 'Luis Carlos', 'Sky',
+  ],
+  'Alabanza': [
+    'Liseth', 'Martha', 'Jessica', 'Andrea', 'Alvaro',
+    'Joshua', 'Andres', 'Jorge', 'Felicia', 'Claudia',
+    'Lizeth R.', 'Damaris', 'Jordy',
+  ],
+};
 
 export const MINISTRY_DETAILS: Record<string, { specialties: string[], checklists: string[] }> = {
   "CSI / Medios": {

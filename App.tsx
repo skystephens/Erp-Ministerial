@@ -17,6 +17,7 @@ import Grupos, { initialGroups } from './components/Grupos';
 import ContentManager from './components/ContentManager';
 import Asistencia from './components/Asistencia';
 import CRMSeguimiento from './components/CRMSeguimiento';
+import MinisterioDashboard from './components/MinisterioDashboard';
 import Login from './components/Login';
 import { AXIS_SCHEMA as INITIAL_SCHEMA } from './constants';
 import { airtableIsActive } from './services/airtableService';
@@ -207,6 +208,14 @@ const App: React.FC = () => {
           followUps={crmFollowUps}
           setFollowUps={setCrmFollowUps}
           users={users}
+        />
+      );
+      case 'mi_ministerio': return (
+        <MinisterioDashboard
+          ministry={currentUser.ministry}
+          role={currentUser.role}
+          users={users}
+          sessions={attendance}
         />
       );
       case 'pastoral_inbox': return <BuzonPeticiones user={currentUser} users={users} initialRequests={petitions} onUpdateRequests={setPetitions} />;
