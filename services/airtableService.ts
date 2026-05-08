@@ -452,6 +452,80 @@ export const createCRMSeguimiento = (fields: CRMSeguimientoFields) =>
 export const updateCRMSeguimiento = (recordId: string, fields: Partial<CRMSeguimientoFields>) =>
   updateRecord<CRMSeguimientoFields>('[CRM] Seguimiento', recordId, fields);
 
+// --- Tabla 2: Ministros y Equipos (base: appOhMA4UJPwKSGP2) ---
+export type MinisterioEquipoFields = {
+  Nombre: string;
+  ID?: string;
+  Rol?: string;
+  'Servicio Asignado'?: string;
+  Ministerio?: string;
+};
+
+const ASISTENCIA_BASE_ID = 'appOhMA4UJPwKSGP2';
+
+const airtableHeaders = () => ({
+  Authorization: `Bearer ${import.meta.env.VITE_AIRTABLE_API_KEY as string}`,
+  'Content-Type': 'application/json',
+});
+
+async function fetchFromBase<T>(baseId: string, tableName: string, filterFormula?: string): Promise<AirtableRecord<T>[]> {
+  const key = import.meta.env.VITE_AIRTABLE_API_KEY as string;
+  if (!key || key.startsWith('tu_')) return [];
+
+  const params = new URLSearchParams();
+  if (filterFormula) params.set('filterByFormula', filterFormula);
+
+  const url = `${BASE_URL}/${baseId}/${encodeURIComponent(tableName)}?${params.toString()}`;
+  const res = await fetch(url, { headers: airtableHeaders() });
+  if (!res.ok) throw new Error(`[${tableName}] GET ${res.status}: ${await res.text()}`);
+
+  const data: AirtableResponse<T> = await res.json();
+  return data.records;
+}
+
+async function createInBase<T>(baseId: string, tableName: string, fields: T): Promise<AirtableRecord<T>> {
+  const key = import.meta.env.VITE_AIRTABLE_API_KEY as string;
+  if (!key || key.startsWith('tu_')) throw new Error('API key no configurada.');
+
+  const res = await fetch(`${BASE_URL}/${baseId}/${encodeURIComponent(tableName)}`, {
+    method: 'POST',
+    headers: airtableHeaders(),
+    body: JSON.stringify({ fields }),
+  });
+  if (!res.ok) throw new Error(`[${tableName}] POST ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export const getMinistrioEquipoMembers = (ministerio?: string) =>
+  fetchFromBase<MinisterioEquipoFields>(
+    ASISTENCIA_BASE_ID,
+    'Tabla 2: Ministros y Equipos',
+    ministerio ? `{Ministerio}="${ministerio}"` : undefined
+  );
+
+// --- Tabla 3: Asistencia (base: appOhMA4UJPwKSGP2) ---
+export type AsistenciaMinisterioFields = {
+  Nombre_Miembro: string;
+  Ministerio?: string;
+  Tipo_Servicio?: string;
+  Fecha?: string;
+  Estado?: 'PRESENTE' | 'AUSENTE' | 'JUSTIFICADO';
+  Notas?: string;
+  Registrado_Por?: string;
+  Fuente?: string;
+};
+
+export const createAsistenciaMinisterio = (fields: AsistenciaMinisterioFields) =>
+  createInBase<AsistenciaMinisterioFields>(ASISTENCIA_BASE_ID, 'Tabla 3: Asistencia', fields);
+
+export const getAsistenciaMinisterio = (ministerio?: string, fecha?: string) => {
+  const filters: string[] = [];
+  if (ministerio) filters.push(`{Ministerio}="${ministerio}"`);
+  if (fecha) filters.push(`{Fecha}="${fecha}"`);
+  const formula = filters.length > 1 ? `AND(${filters.join(',')})` : filters[0];
+  return fetchFromBase<AsistenciaMinisterioFields>(ASISTENCIA_BASE_ID, 'Tabla 3: Asistencia', formula);
+};
+
 // --- Sync híbrido: crea tarea y registra aporte en Banco_Tiempo ---
 export const syncTareaConBanco = async (
   tarea: TareaFields,

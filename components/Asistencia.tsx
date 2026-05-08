@@ -4,7 +4,7 @@ import {
   ClipboardList, Plus, Check, X, Users, Calendar,
   Save, Eye, Trash2, Search, UserPlus, BarChart2,
 } from 'lucide-react';
-import { airtableIsActive, createAsistenciaRecord } from '../services/airtableService';
+import { getMinistrioEquipoMembers, createAsistenciaMinisterio } from '../services/airtableService';
 import { MINISTRY_MEMBERS } from '../constants';
 
 // ─── Datos del formulario real de Google Forms / Airtable ────────────────────
@@ -33,7 +33,7 @@ const MINISTERIOS = [
   'Formación Bíblica',
   'Danza',
   'Escuela Infantil AMO',
-  'Atención Social',
+  'Social',
   'Cuidado Pastoral',
   'Adolescentes Oasis',
   'Generación de Joel',
@@ -76,37 +76,46 @@ const Asistencia: React.FC<AsistenciaProps> = ({
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [extraName, setExtraName] = useState('');
+  const [loadingMembers, setLoadingMembers] = useState(false);
 
-  // Construir lista de miembros según ministerio seleccionado
-  const buildMemberList = (ministry: string): AttendanceRecord[] => {
+  const buildMemberListFromFallback = (ministry: string): AttendanceRecord[] => {
     const fixedList = MINISTRY_MEMBERS[ministry];
-    if (fixedList) {
-      return fixedList.map(name => ({ memberName: name, isPresent: false }));
-    }
-    const ministryUsers = users.filter(
-      u => u.status === 'APPROVED' && u.ministry === ministry
-    );
-    if (ministryUsers.length > 0) {
-      return ministryUsers.map(u => ({
-        memberId: u.id,
-        memberName: u.name,
-        isPresent: false,
-      }));
-    }
-    return [];
+    if (fixedList) return fixedList.map(name => ({ memberName: name, isPresent: false }));
+    return users
+      .filter(u => u.status === 'APPROVED' && u.ministry === ministry)
+      .map(u => ({ memberId: u.id, memberName: u.name, isPresent: false }));
   };
 
-  const handleStartNew = () => {
-    setRecords(buildMemberList(formMinistry));
+  const loadMembersFromAirtable = async (ministry: string) => {
+    setLoadingMembers(true);
+    try {
+      const airtableRecords = await getMinistrioEquipoMembers(ministry);
+      if (airtableRecords.length > 0) {
+        setRecords(airtableRecords.map(r => ({
+          memberName: r.fields.Nombre,
+          isPresent: false,
+        })));
+      } else {
+        setRecords(buildMemberListFromFallback(ministry));
+      }
+    } catch {
+      setRecords(buildMemberListFromFallback(ministry));
+    } finally {
+      setLoadingMembers(false);
+    }
+  };
+
+  const handleStartNew = async () => {
     setFormNotes('');
     setExtraName('');
     setSearchQuery('');
     setView('nueva');
+    await loadMembersFromAirtable(formMinistry);
   };
 
-  const handleMinistryChange = (m: string) => {
+  const handleMinistryChange = async (m: string) => {
     setFormMinistry(m);
-    setRecords(buildMemberList(m));
+    await loadMembersFromAirtable(m);
   };
 
   const filteredRecords = useMemo(() =>
@@ -145,7 +154,6 @@ const Asistencia: React.FC<AsistenciaProps> = ({
     setSaving(true);
     try {
       const serviceOption = SERVICE_OPTIONS.find(s => s.value === formService)!;
-      const presentMembers = records.filter(r => r.isPresent);
 
       const session: AttendanceSession = {
         id: `att_${Date.now()}`,
@@ -163,24 +171,21 @@ const Asistencia: React.FC<AsistenciaProps> = ({
 
       setSessions(prev => [session, ...prev]);
 
-      // Sync a Airtable: un registro por miembro presente (igual al formulario de Google)
-      if (airtableIsActive() && presentMembers.length > 0) {
-        await Promise.all(
-          presentMembers.map(r =>
-            createAsistenciaRecord({
-              Name: r.memberName,
-              Ministerio: formMinistry,
-              Tipo_Servicio: serviceOption.label,
-              Fecha: formDate,
-              Hora: formHora || undefined,
-              Registrado_Por: currentUserName,
-              Fuente: 'APP',
-              Miembros_Presentes: r.memberName,
-              Notas: formNotes || undefined,
-            }).catch(() => null)
-          )
-        );
-      }
+      // Sync a Tabla 3: Asistencia — un registro por miembro con su estado (trazabilidad completa)
+      await Promise.all(
+        records.map(r =>
+          createAsistenciaMinisterio({
+            Nombre_Miembro: r.memberName,
+            Ministerio: formMinistry,
+            Tipo_Servicio: serviceOption.label,
+            Fecha: formDate,
+            Estado: r.isPresent ? 'PRESENTE' : 'AUSENTE',
+            Notas: formNotes || undefined,
+            Registrado_Por: currentUserName,
+            Fuente: 'APP',
+          }).catch(() => null)
+        )
+      );
 
       setView('historial');
     } finally {
@@ -214,6 +219,7 @@ const Asistencia: React.FC<AsistenciaProps> = ({
         onSave={handleSave}
         onCancel={() => setView('historial')}
         saving={saving}
+        loadingMembers={loadingMembers}
       />
     );
   }
@@ -293,7 +299,7 @@ const Asistencia: React.FC<AsistenciaProps> = ({
 // ─── Vista: Nueva Lista ───────────────────────────────────────────────────────
 
 interface NuevaListaProps {
-  formMinistry: string; onMinistryChange: (v: string) => void;
+  formMinistry: string; onMinistryChange: (v: string) => Promise<void>;
   formService: string; setFormService: (v: string) => void;
   formDate: string; setFormDate: (v: string) => void;
   formHora: string; setFormHora: (v: string) => void;
@@ -309,6 +315,7 @@ interface NuevaListaProps {
   onSave: () => void;
   onCancel: () => void;
   saving: boolean;
+  loadingMembers: boolean;
 }
 
 const NuevaLista: React.FC<NuevaListaProps> = ({
@@ -316,7 +323,7 @@ const NuevaLista: React.FC<NuevaListaProps> = ({
   formDate, setFormDate, formHora, setFormHora, formNotes, setFormNotes,
   filteredRecords, records, searchQuery, setSearchQuery,
   extraName, setExtraName, totalPresent, totalAbsent,
-  onToggle, onAddExtra, onRemove, onMarkAll, onSave, onCancel, saving,
+  onToggle, onAddExtra, onRemove, onMarkAll, onSave, onCancel, saving, loadingMembers,
 }) => (
   <div className="space-y-6 animate-fadeIn">
     <div className="flex justify-between items-center">
@@ -457,14 +464,18 @@ const NuevaLista: React.FC<NuevaListaProps> = ({
           </div>
 
           <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
-            {filteredRecords.length === 0 && (
+            {loadingMembers ? (
+              <div className="py-12 text-center text-slate-400">
+                <div className="w-6 h-6 border-2 border-turqui border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                <p className="text-xs">Cargando equipo desde Airtable...</p>
+              </div>
+            ) : filteredRecords.length === 0 ? (
               <div className="py-12 text-center text-slate-400">
                 <Users size={28} className="mx-auto mb-2 opacity-30" />
                 <p className="text-sm">Sin miembros en la lista.</p>
                 <p className="text-xs mt-1">Agrega nombres manualmente abajo.</p>
               </div>
-            )}
-            {filteredRecords.map((record) => (
+            ) : filteredRecords.map((record) => (
               <div
                 key={record.memberName}
                 className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer ${
@@ -531,7 +542,7 @@ const NuevaLista: React.FC<NuevaListaProps> = ({
             className="flex-[2] py-3 bg-turqui text-white font-bold rounded-xl shadow-lg shadow-turqui/20 flex items-center justify-center gap-2 disabled:opacity-50 hover:scale-[1.02] transition-all"
           >
             <Save size={18} />
-            {saving ? 'Guardando en Airtable...' : `Guardar (${totalPresent} presentes de ${records.length})`}
+            {saving ? 'Guardando en Airtable...' : `Guardar — ${totalPresent} presentes · ${records.length} en total`}
           </button>
         </div>
       </div>
