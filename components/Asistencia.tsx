@@ -92,11 +92,12 @@ const Asistencia: React.FC<AsistenciaProps> = ({
       const airtableRecords = await getMinistrioEquipoMembers(ministry);
       if (airtableRecords.length > 0) {
         setRecords(airtableRecords.map(r => ({
-          memberName: r.fields.Nombre,
+          memberName: r.fields.Nombre ?? r.fields['Nombre'] ?? '',
           isPresent: false,
-        })));
+        })).filter(r => r.memberName !== ''));
       } else {
-        setRecords(buildMemberListFromFallback(ministry));
+        const fallback = buildMemberListFromFallback(ministry);
+        setRecords(fallback);
       }
     } catch {
       setRecords(buildMemberListFromFallback(ministry));
@@ -106,6 +107,8 @@ const Asistencia: React.FC<AsistenciaProps> = ({
   };
 
   const handleStartNew = async () => {
+    setRecords([]);
+    setLoadingMembers(true);
     setFormNotes('');
     setExtraName('');
     setSearchQuery('');
@@ -115,6 +118,8 @@ const Asistencia: React.FC<AsistenciaProps> = ({
 
   const handleMinistryChange = async (m: string) => {
     setFormMinistry(m);
+    setRecords([]);
+    setLoadingMembers(true);
     await loadMembersFromAirtable(m);
   };
 
