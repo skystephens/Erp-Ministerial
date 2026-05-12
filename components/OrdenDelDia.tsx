@@ -172,8 +172,8 @@ const OrdenDelDia: React.FC<Props> = ({ role }) => {
   const [editForm, setEditForm]       = useState<Partial<OrdenItem> & { rolesStr?: string }>({});
   const [editEquipoId, setEditEquipoId] = useState<string | null>(null);
   const [equipoForm, setEquipoForm]   = useState<{ name: string; role: string }>({ name: '', role: '' });
-  const [showAddEquipo, setShowAddEquipo] = useState(false);
-  const [newEquipo, setNewEquipo]     = useState<{ name: string; role: string; grupo: GrupoEquipo }>({ name: '', role: '', grupo: 'medios' });
+  const [addingEquipoGrupo, setAddingEquipoGrupo] = useState<GrupoEquipo | null>(null);
+  const [newEquipo, setNewEquipo]     = useState<{ name: string; role: string }>({ name: '', role: '' });
   const [showNovedadForm, setShowNovedadForm] = useState(false);
   const [novedadForm, setNovedadForm] = useState<{ tipo: TipoNovedad; titulo: string; texto: string }>({ tipo: 'info', titulo: '', texto: '' });
   const [copied, setCopied]           = useState(false);
@@ -278,14 +278,14 @@ const OrdenDelDia: React.FC<Props> = ({ role }) => {
     setEquipoForm({ name: '', role: '' });
   };
 
-  const addEquipoMember = () => {
+  const addEquipoMember = (grupo: GrupoEquipo) => {
     if (!newEquipo.name.trim()) return;
     setState(s => ({
       ...s,
-      equipo: [...s.equipo, { id: `eq_${Date.now()}`, ...newEquipo }],
+      equipo: [...s.equipo, { id: `eq_${Date.now()}`, name: newEquipo.name.trim(), role: newEquipo.role.trim(), grupo }],
     }));
-    setNewEquipo({ name: '', role: '', grupo: 'medios' });
-    setShowAddEquipo(false);
+    setNewEquipo({ name: '', role: '' });
+    setAddingEquipoGrupo(null);
   };
 
   const deleteEquipo = (id: string) => {
@@ -606,14 +606,28 @@ const OrdenDelDia: React.FC<Props> = ({ role }) => {
         <div className="space-y-4">
           {(['medios', 'alabanza', 'pastoral'] as GrupoEquipo[]).map(grupo => (
             <div key={grupo} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">
-                {GRUPO_LABELS[grupo]}
-              </h3>
+              {/* Group header */}
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  {GRUPO_LABELS[grupo]}
+                </h3>
+                {canEdit && addingEquipoGrupo !== grupo && (
+                  <button
+                    onClick={() => { setAddingEquipoGrupo(grupo); setNewEquipo({ name: '', role: '' }); setEditEquipoId(null); }}
+                    className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-semibold px-2.5 py-1 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                  >
+                    <Plus size={11} /> Agregar
+                  </button>
+                )}
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {state.equipo.filter(m => m.grupo === grupo).map(m =>
                   editEquipoId === m.id ? (
+                    /* Edit form */
                     <div key={m.id} className="p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-2">
                       <input
+                        autoFocus
                         className="w-full text-sm border border-slate-200 rounded-lg px-2.5 py-1.5 bg-white focus:outline-none focus:border-blue-400"
                         placeholder="Nombre"
                         value={equipoForm.name}
@@ -635,7 +649,8 @@ const OrdenDelDia: React.FC<Props> = ({ role }) => {
                       </div>
                     </div>
                   ) : (
-                    <div key={m.id} className="p-3 border border-slate-200 rounded-xl group flex items-start gap-2">
+                    /* Member card */
+                    <div key={m.id} className="p-3 border border-slate-200 rounded-xl flex items-start gap-2">
                       <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 mt-0.5">
                         <User size={13} className="text-slate-500" />
                       </div>
@@ -644,11 +659,19 @@ const OrdenDelDia: React.FC<Props> = ({ role }) => {
                         <p className="text-xs text-slate-500 mt-0.5">{m.role}</p>
                       </div>
                       {canEdit && (
-                        <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={e => startEditEquipo(m, e)} className="text-slate-400 hover:text-blue-500 p-0.5 rounded">
+                        <div className="flex gap-1 flex-shrink-0">
+                          <button
+                            onClick={e => startEditEquipo(m, e)}
+                            className="text-slate-300 hover:text-blue-500 p-1 rounded hover:bg-blue-50 transition-colors"
+                            title="Editar"
+                          >
                             <Pencil size={12} />
                           </button>
-                          <button onClick={() => deleteEquipo(m.id)} className="text-slate-400 hover:text-red-500 p-0.5 rounded">
+                          <button
+                            onClick={() => deleteEquipo(m.id)}
+                            className="text-slate-300 hover:text-red-500 p-1 rounded hover:bg-red-50 transition-colors"
+                            title="Eliminar"
+                          >
                             <Trash2 size={12} />
                           </button>
                         </div>
@@ -656,61 +679,44 @@ const OrdenDelDia: React.FC<Props> = ({ role }) => {
                     </div>
                   )
                 )}
+
+                {/* Inline add form inside the group's grid */}
+                {addingEquipoGrupo === grupo && (
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-2">
+                    <input
+                      autoFocus
+                      className="w-full text-sm border border-slate-200 rounded-lg px-2.5 py-1.5 bg-white focus:outline-none focus:border-blue-400"
+                      placeholder="Nombre del miembro"
+                      value={newEquipo.name}
+                      onChange={e => setNewEquipo(f => ({ ...f, name: e.target.value }))}
+                      onKeyDown={e => { if (e.key === 'Enter') addEquipoMember(grupo); if (e.key === 'Escape') setAddingEquipoGrupo(null); }}
+                    />
+                    <input
+                      className="w-full text-sm border border-slate-200 rounded-lg px-2.5 py-1.5 bg-white focus:outline-none focus:border-blue-400"
+                      placeholder="Rol o función"
+                      value={newEquipo.role}
+                      onChange={e => setNewEquipo(f => ({ ...f, role: e.target.value }))}
+                      onKeyDown={e => { if (e.key === 'Enter') addEquipoMember(grupo); if (e.key === 'Escape') setAddingEquipoGrupo(null); }}
+                    />
+                    <div className="flex gap-1.5">
+                      <button
+                        onClick={() => addEquipoMember(grupo)}
+                        className="flex-1 flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-1.5 rounded-lg transition-colors"
+                      >
+                        <Check size={11} /> Guardar
+                      </button>
+                      <button
+                        onClick={() => setAddingEquipoGrupo(null)}
+                        className="flex-1 border border-slate-200 bg-white text-slate-600 text-xs py-1.5 rounded-lg hover:bg-slate-50 transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ))}
-
-          {/* Add equipo member */}
-          {canEdit && (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-              {showAddEquipo ? (
-                <div className="space-y-3">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Agregar miembro al equipo</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      className="text-sm border border-slate-200 rounded-lg px-2.5 py-1.5 bg-slate-50 focus:outline-none focus:border-blue-400 focus:bg-white"
-                      placeholder="Nombre"
-                      value={newEquipo.name}
-                      onChange={e => setNewEquipo(f => ({ ...f, name: e.target.value }))}
-                    />
-                    <input
-                      className="text-sm border border-slate-200 rounded-lg px-2.5 py-1.5 bg-slate-50 focus:outline-none focus:border-blue-400 focus:bg-white"
-                      placeholder="Rol"
-                      value={newEquipo.role}
-                      onChange={e => setNewEquipo(f => ({ ...f, role: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Grupo</label>
-                    <select
-                      className="mt-1 text-sm border border-slate-200 rounded-lg px-2.5 py-1.5 bg-slate-50 focus:outline-none focus:border-blue-400 w-full"
-                      value={newEquipo.grupo}
-                      onChange={e => setNewEquipo(f => ({ ...f, grupo: e.target.value as GrupoEquipo }))}
-                    >
-                      <option value="medios">Equipo de medios</option>
-                      <option value="alabanza">Ministerio de alabanza</option>
-                      <option value="pastoral">Ministerio pastoral</option>
-                    </select>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={addEquipoMember} className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
-                      <Plus size={13} /> Agregar
-                    </button>
-                    <button onClick={() => setShowAddEquipo(false)} className="text-sm text-slate-600 border border-slate-200 hover:bg-slate-50 px-4 py-2 rounded-lg transition-colors">
-                      Cancelar
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setShowAddEquipo(true)}
-                  className="w-full flex items-center justify-center gap-2 border border-dashed border-slate-300 text-slate-400 hover:text-slate-600 hover:border-slate-400 hover:bg-slate-50 text-sm py-2.5 rounded-xl transition-all"
-                >
-                  <Plus size={14} /> Agregar miembro al equipo
-                </button>
-              )}
-            </div>
-          )}
         </div>
       )}
 
