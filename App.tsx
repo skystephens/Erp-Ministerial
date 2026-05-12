@@ -18,6 +18,7 @@ import ContentManager from './components/ContentManager';
 import Asistencia from './components/Asistencia';
 import CRMSeguimiento from './components/CRMSeguimiento';
 import MinisterioDashboard from './components/MinisterioDashboard';
+import OrdenDelDia from './components/OrdenDelDia';
 import Login from './components/Login';
 import { AXIS_SCHEMA as INITIAL_SCHEMA } from './constants';
 import { airtableIsActive } from './services/airtableService';
@@ -191,6 +192,7 @@ const App: React.FC = () => {
       );
       case 'projects':      return <ProjectManager user={currentUser} tasks={tasks} schema={axisSchema} onUpdateSchema={setAxisSchema} />;
       case 'operations':    return <Operations role={currentUser.role} tasks={tasks} setTasks={setTasks} />;
+      case 'orden_del_dia': return <OrdenDelDia role={currentUser.role} />;
       case 'timebank':      return <TimeBank role={currentUser.role} user={currentUser} />;
       case 'calendar':      return <CalendarView role={currentUser.role} events={calendarEvents} setEvents={setCalendarEvents} />;
       case 'asistencia':    return (

@@ -19,6 +19,7 @@ import {
   ClipboardList,
   UserCheck,
   LayoutGrid,
+  ListChecks,
 } from 'lucide-react';
 import { ApostolicAxis, UserRole } from './types';
 
@@ -95,6 +96,7 @@ export const NAV_SECTIONS: NavSection[] = [
     label: 'Gestión Ministerial',
     icon: <Building2 size={16} />,
     items: [
+      { id: 'orden_del_dia',  label: 'Orden del Día',   icon: <ListChecks size={18} /> },
       { id: 'timebank',       label: 'Banco de Tiempo', icon: <HeartHandshake size={18} /> },
       { id: 'calendar',       label: 'Calendario 2026', icon: <CalendarDays size={18} /> },
       // Panel propio del ministerio asignado — visible para miembro y líder
