@@ -373,7 +373,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           <div className="relative">
             <div className="absolute inset-0 rounded-full bg-[#49D1C5]/10 blur-2xl scale-150"/>
             {!imgError ? (
-              <img src="/logo-tafe-circle.png" alt="TAFE" className="relative z-10 w-52 h-52 object-contain drop-shadow-2xl" onError={() => setImgError(true)}/>
+              <img src="/logo-tafe-circle.png" alt="TAFE" className="relative z-10 w-52 h-52 object-contain rounded-3xl shadow-2xl shadow-black/40" onError={() => setImgError(true)}/>
             ) : (
               <div className="relative z-10 w-52 h-52 flex items-center justify-center"><TafeSvgLogo size={200} white/></div>
             )}
