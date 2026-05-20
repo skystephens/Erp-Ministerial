@@ -23,6 +23,7 @@ import Login from './components/Login';
 import { AXIS_SCHEMA as INITIAL_SCHEMA } from './constants';
 import { airtableIsActive } from './services/airtableService';
 import { getStoredSession, logout as authLogout, sessionToUser } from './services/authService';
+import { firebaseLogout } from './services/firebaseAuthService';
 
 const STORAGE_KEYS = {
   USERS:      'tafe_erp_users',
@@ -119,6 +120,7 @@ const App: React.FC = () => {
 
   const handleLogout = () => {
     authLogout();
+    firebaseLogout().catch(() => {}); // cierra sesión Firebase si estaba activa
     setCurrentUser(null);
     setActiveTab('dashboard');
   };
