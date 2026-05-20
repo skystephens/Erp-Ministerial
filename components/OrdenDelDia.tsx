@@ -6,7 +6,7 @@ import {
   Newspaper, BookOpen, Sparkles, Star, ThumbsUp, Users,
   Pencil, Trash2, Check, X, AlertTriangle, Info as InfoIcon,
   Copy, ChevronDown, ChevronUp, Plus, Lock, User,
-  Image as ImageIcon, CalendarDays,
+  Image as ImageIcon, CalendarDays, Clock,
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -173,6 +173,23 @@ const buildInitialState = (): OrdenState => {
   return { meses: [DEFAULT_PROGRAMA], activeMesId: DEFAULT_PROGRAMA.id, servicioData: {} };
 };
 
+// ─── Date helpers ─────────────────────────────────────────────────────────────
+
+const MONTHS_ES: Record<string, number> = {
+  enero:0, febrero:1, marzo:2, abril:3, mayo:4, junio:5,
+  julio:6, agosto:7, septiembre:8, octubre:9, noviembre:10, diciembre:11,
+};
+const parseMesInfo = (mesLabel: string): { year: number; month: number } | null => {
+  const parts = mesLabel.toLowerCase().split(' ');
+  const month = MONTHS_ES[parts[0]];
+  const year  = parseInt(parts[1] ?? '');
+  return month !== undefined && !isNaN(year) ? { year, month } : null;
+};
+const extractDay = (fechaLabel: string): number => {
+  const m = fechaLabel.match(/\b(\d{1,2})\b/);
+  return m ? parseInt(m[1]) : 0;
+};
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const OrdenDelDia: React.FC<Props> = ({ role }) => {
@@ -236,6 +253,17 @@ const OrdenDelDia: React.FC<Props> = ({ role }) => {
 
   const activeSvcMeta   = activeView !== 'mes' ? allServices.find(s => s.id === activeView) : null;
   const activeDetalle   = activeSvcMeta ? getServicio(activeView, activeSvcMeta.tipo) : null;
+
+  const isServicePast = (fechaLabel: string): boolean => {
+    const info = parseMesInfo(activeMes?.mesLabel ?? '');
+    if (!info) return false;
+    const day = extractDay(fechaLabel);
+    if (!day) return false;
+    const now = new Date();
+    return info.year < now.getFullYear() ||
+      (info.year === now.getFullYear() && info.month < now.getMonth()) ||
+      (info.year === now.getFullYear() && info.month === now.getMonth() && day < now.getDate());
+  };
 
   const switchView = (id: string) => {
     setActiveView(id);
@@ -488,16 +516,24 @@ const OrdenDelDia: React.FC<Props> = ({ role }) => {
           const detalle  = state.servicioData[svc.id];
           const hasNov   = !!(detalle?.novedades?.length);
           const isActive = activeView === svc.id;
+          const isPast   = isServicePast(svc.fechaLabel);
           return (
             <button key={svc.id} onClick={() => switchView(svc.id)}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap border transition-all flex-shrink-0 ${
-                isActive ? svcPillActive(svc.tipo) : 'bg-white text-slate-500 border-slate-200 hover:border-slate-400'
+                isActive
+                  ? svcPillActive(svc.tipo)
+                  : isPast
+                    ? 'bg-slate-50 text-slate-400 border-slate-200 hover:border-slate-300'
+                    : 'bg-white text-slate-500 border-slate-200 hover:border-slate-400'
               }`}
             >
               <span className={`text-[9px] font-bold px-1 py-0.5 rounded ${isActive ? 'bg-white/20 text-white' : svcBadgeInactive(svc.tipo)}`}>
                 {svcBadgeLabel(svc.tipo)}
               </span>
-              {svc.tipo === 'especial' && svc.nombre ? `${svc.nombre} · ${svc.fechaLabel}` : svc.fechaLabel}
+              <span className={isPast && !isActive ? 'opacity-60' : ''}>
+                {svc.tipo === 'especial' && svc.nombre ? `${svc.nombre} · ${svc.fechaLabel}` : svc.fechaLabel}
+              </span>
+              {isPast && !isActive && <Clock size={9} className="text-slate-300 flex-shrink-0"/>}
               {hasNov && <span className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0"/>}
             </button>
           );
@@ -873,6 +909,115 @@ const OrdenDelDia: React.FC<Props> = ({ role }) => {
     );
   };
 
+  // ── Calendar view ──────────────────────────────────────────────────────────
+
+  const renderCalendarioMes = () => {
+    if (!activeMes) return null;
+    const info = parseMesInfo(activeMes.mesLabel);
+    if (!info) return null;
+    const { year, month } = info;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDow    = new Date(year, month, 1).getDay();
+
+    const today    = new Date();
+    const todayDay = today.getFullYear() === year && today.getMonth() === month ? today.getDate() : -1;
+
+    const saturdays: number[] = [];
+    for (let d = 1; d <= daysInMonth; d++)
+      if (new Date(year, month, d).getDay() === 6) saturdays.push(d);
+    const ayunoSet   = new Set<number>([saturdays[1], saturdays[3]].filter((n): n is number => n !== undefined));
+    const evangelSet = new Set<number>([saturdays[2]].filter((n): n is number => n !== undefined));
+
+    const dayMap: Record<number, { type: string; label?: string }[]> = {};
+    const push = (d: number, ev: { type: string; label?: string }) => {
+      if (!dayMap[d]) dayMap[d] = [];
+      dayMap[d].push(ev);
+    };
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dow = new Date(year, month, d).getDay();
+      if (dow === 5) push(d, { type: 'viernes' });
+      if (dow === 0) push(d, { type: 'domingo' });
+    }
+    ayunoSet.forEach(d   => push(d, { type: 'ayuno' }));
+    evangelSet.forEach(d => push(d, { type: 'evangelismo' }));
+
+    activeMes.viernes.forEach((v: ServicioViernes)     => { const d = extractDay(v.fechaLabel); const ev = dayMap[d]?.find(e => e.type==='viernes'); if (ev && v.ministro) ev.label = v.ministro; });
+    activeMes.domingos.forEach((dm: ServicioDomingo)   => { const d = extractDay(dm.fechaLabel); const ev = dayMap[d]?.find(e => e.type==='domingo'); if (ev && dm.tema) ev.label = dm.tema; });
+    activeMes.ayunos.forEach((a: Ayuno)                => { const d = extractDay(a.fechaLabel); const ev = dayMap[d]?.find(e => e.type==='ayuno'); if (ev && a.ministerio) ev.label = a.ministerio; });
+    activeMes.especiales.forEach((e: EspecialServicio) => { const d = extractDay(e.fechaLabel); if (d) push(d, { type: 'especial', label: e.nombre }); });
+    activeMes.eventos.forEach((evn: EventoMes)         => { const d = extractDay(evn.fechaLabel); if (d) push(d, { type: 'evento', label: evn.nombre }); });
+
+    const EV_COLOR: Record<string, string> = {
+      viernes: 'bg-emerald-100 text-emerald-700', domingo: 'bg-amber-100 text-amber-700',
+      ayuno: 'bg-indigo-100 text-indigo-700',     evangelismo: 'bg-orange-100 text-orange-700',
+      especial: 'bg-purple-100 text-purple-700',  evento: 'bg-rose-100 text-rose-700',
+    };
+    const EV_SHORT: Record<string, string> = {
+      viernes: 'VIE', domingo: 'DOM', ayuno: 'AYUNO', evangelismo: 'EVAN', especial: 'ESP', evento: 'EV',
+    };
+    const LEGEND = [
+      { type:'viernes',     label:'Serv. Viernes' },
+      { type:'domingo',     label:'Serv. Dominical' },
+      { type:'ayuno',       label:'Ayuno (2do/4to Sáb)' },
+      { type:'evangelismo', label:'Evangelismo (3er Sáb)' },
+      { type:'especial',    label:'Serv. Especial' },
+      { type:'evento',      label:'Evento' },
+    ];
+
+    const cells: (number | null)[] = [];
+    for (let i = 0; i < firstDow; i++) cells.push(null);
+    for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+    while (cells.length % 7 !== 0) cells.push(null);
+
+    const DOW = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+
+    return (
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+          <CalendarDays size={11}/> Vista de Calendario — {activeMes.mesLabel}
+        </h4>
+        <div className="grid grid-cols-7 gap-px bg-slate-100 rounded-xl overflow-hidden">
+          {DOW.map(h => (
+            <div key={h} className="bg-slate-50 text-center text-[10px] font-bold text-slate-400 uppercase py-1.5">{h}</div>
+          ))}
+          {cells.map((day, idx) => {
+            if (day === null) return <div key={`x${idx}`} className="min-h-[64px] bg-slate-50/40"/>;
+            const evs     = dayMap[day] ?? [];
+            const isToday = day === todayDay;
+            const isPast  = todayDay > 0 && day < todayDay;
+            const col     = idx % 7;
+            return (
+              <div key={day} className={`min-h-[64px] p-1.5 ${isPast ? 'bg-slate-50' : 'bg-white'}`}>
+                <div className={`text-[11px] font-bold mb-1 w-5 h-5 flex items-center justify-center rounded-full ${
+                  isToday ? 'bg-slate-800 text-white'
+                  : isPast ? 'text-slate-300'
+                  : col === 0 ? 'text-rose-500'
+                  : col === 6 ? 'text-indigo-500'
+                  : 'text-slate-600'
+                }`}>{day}</div>
+                <div className="space-y-0.5">
+                  {evs.map((ev, ei) => (
+                    <div key={ei} title={ev.label ?? ''} className={`text-[8px] font-bold px-1 py-0.5 rounded truncate leading-tight ${EV_COLOR[ev.type] ?? ''} ${isPast ? 'opacity-40' : ''}`}>
+                      {EV_SHORT[ev.type] ?? ev.type}{ev.label ? ` ${ev.label}` : ''}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="flex flex-wrap gap-2 mt-3">
+          {LEGEND.map(({ type, label }) => (
+            <span key={type} className={`text-[9px] font-semibold px-2 py-0.5 rounded ${EV_COLOR[type]}`}>
+              {EV_SHORT[type]} — {label}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   // ── Mes view ───────────────────────────────────────────────────────────────
 
   const renderMesView = () => {
@@ -942,6 +1087,7 @@ const OrdenDelDia: React.FC<Props> = ({ role }) => {
             </div>
           </div>
         </div>
+        {renderCalendarioMes()}
         {renderPrograSection('viernes',   'Viernes de Ministración y Oración',        activeMes.viernes    as unknown as Record<string,string>[])}
         {renderPrograSection('domingos',  'Servicio Dominical — Oración de Apertura', activeMes.domingos   as unknown as Record<string,string>[])}
         {renderPrograSection('especiales','Servicios Especiales / Ad-hoc',            (activeMes.especiales??[]) as unknown as Record<string,string>[])}
@@ -957,7 +1103,7 @@ const OrdenDelDia: React.FC<Props> = ({ role }) => {
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <h2 className="text-xl font-bold text-slate-800">Orden del Día — Servicios TAFE</h2>
+          <h2 className="text-xl font-bold text-slate-800">Programa del Mes — Servicios TAFE</h2>
           <p className="text-sm text-slate-500 mt-0.5 flex items-center gap-2">
             Plantilla base para Easy Worship · visible para todo el equipo
             {!canEdit && <span className="inline-flex items-center gap-1 text-slate-400 text-xs"><Lock size={11}/> Solo lectura</span>}
