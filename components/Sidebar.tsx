@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import { UserRole } from '../types';
-import { NAV_SECTIONS, MINISTRY_HIERARCHY } from '../constants';
-import { ChevronDown, LogOut, ShieldCheck, UserRoundCheck, LayoutDashboard } from 'lucide-react';
+import { NAV_SECTIONS } from '../constants';
+import { ChevronDown, LogOut, ShieldCheck, LayoutDashboard } from 'lucide-react';
 
 interface SidebarProps {
   activeTab: string;
@@ -21,8 +21,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, currentRole,
     sec_personas: true,
     sec_admin: true,
   });
-  const [isMinistriesOpen, setIsMinistriesOpen] = useState(false);
-
   const toggleSection = (id: string) =>
     setOpenSections(prev => ({ ...prev, [id]: !prev[id] }));
 
@@ -35,13 +33,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, currentRole,
 
   const canSeeItem = (roles?: UserRole[]) =>
     !roles || roles.includes(currentRole);
-
-  const getVisibleMinistries = () => {
-    if (currentRole === UserRole.SUPER_ADMIN) return MINISTRY_HIERARCHY;
-    if (currentRole === UserRole.SUPERVISORA)
-      return MINISTRY_HIERARCHY.filter(g => g.pastora === 'Liseth Lever');
-    return [];
-  };
 
   const getPastoralLabel = () => {
     if (currentRole === UserRole.SUPER_ADMIN || currentRole === UserRole.SUPERVISORA)
@@ -160,49 +151,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, currentRole,
           );
         })}
 
-        {/* Jerarquía Ministerial */}
-        <div className="pt-4 mt-2 border-t border-white/10">
-          <button
-            onClick={() => setIsMinistriesOpen(!isMinistriesOpen)}
-            className={`w-full flex items-center justify-between px-4 py-3 text-sm rounded-xl transition-all ${
-              isMinistriesOpen ? 'bg-white/10 text-white' : 'text-white/40 hover:bg-white/5 hover:text-white'
-            }`}
-          >
-            <span className="flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full transition-all ${isMinistriesOpen ? 'bg-turqui shadow-[0_0_8px_#49D1C5]' : 'bg-white/20'}`} />
-              <span className="text-[10px] font-bold uppercase tracking-[0.15em]">
-                {currentRole === UserRole.MIEMBRO ? 'Mi Ministerio' : currentRole === UserRole.SUPERVISORA ? 'Mis Asignados' : '15 Ministerios'}
-              </span>
-            </span>
-            <ChevronDown size={13} className={`transition-transform duration-200 ${isMinistriesOpen ? 'rotate-180' : ''}`} />
-          </button>
-
-          {isMinistriesOpen && (
-            <div className="mt-1 ml-2 pl-3 border-l border-white/10 max-h-56 overflow-y-auto custom-scrollbar pr-1 space-y-3 py-2 animate-fadeIn">
-              {currentRole === UserRole.MIEMBRO ? (
-                <button className="w-full text-left px-3 py-2 text-[11px] font-bold text-turqui bg-turqui/10 rounded-lg">
-                  {currentUserMinistry ?? 'Sin ministerio asignado'}
-                </button>
-              ) : (
-                getVisibleMinistries().map((group, idx) => (
-                  <div key={idx} className="space-y-1">
-                    <p className="text-[9px] font-bold text-turqui uppercase tracking-tighter flex items-center gap-1 opacity-80">
-                      <UserRoundCheck size={10} /> {group.pastora.split(' ')[0]}
-                    </p>
-                    {group.ministries.map((m, midx) => (
-                      <div key={midx} className="pl-2 border-l border-white/5">
-                        <button className="w-full text-left py-1 text-[10px] text-white/55 hover:text-white transition-colors truncate font-medium">
-                          {m.name}
-                        </button>
-                        <span className="text-[8px] text-white/20 italic ml-1">Líder: {m.leader}</span>
-                      </div>
-                    ))}
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-        </div>
       </nav>
 
       {/* Role selector */}
@@ -212,10 +160,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, currentRole,
         </p>
         <select
           value={currentRole}
-          onChange={e => {
-            onRoleChange(e.target.value as UserRole);
-            setIsMinistriesOpen(false);
-          }}
+          onChange={e => onRoleChange(e.target.value as UserRole)}
           className="w-full bg-[#002D5A] text-white text-xs font-bold border border-white/20 rounded-xl p-3 outline-none cursor-pointer hover:bg-[#003A75] transition-all focus:ring-2 ring-turqui/40"
         >
           <option value={UserRole.SUPER_ADMIN}>Super Admin</option>
