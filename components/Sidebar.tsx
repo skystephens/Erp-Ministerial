@@ -153,22 +153,24 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, currentRole,
 
       </nav>
 
-      {/* Role selector */}
-      <div className="p-4 mx-4 mb-4 bg-slate-900/40 rounded-2xl border border-white/10 shadow-inner shrink-0">
-        <p className="text-[9px] text-white/40 mb-2 font-bold uppercase tracking-widest flex items-center gap-2">
-          <ShieldCheck size={10} /> Rol de Operación
-        </p>
-        <select
-          value={currentRole}
-          onChange={e => onRoleChange(e.target.value as UserRole)}
-          className="w-full bg-[#002D5A] text-white text-xs font-bold border border-white/20 rounded-xl p-3 outline-none cursor-pointer hover:bg-[#003A75] transition-all focus:ring-2 ring-turqui/40"
-        >
-          <option value={UserRole.SUPER_ADMIN}>Super Admin</option>
-          <option value={UserRole.SUPERVISORA}>Supervisora Táctica</option>
-          <option value={UserRole.LIDER_MINISTERIO}>Líder Ministerio</option>
-          <option value={UserRole.MIEMBRO}>Miembro</option>
-        </select>
-      </div>
+      {/* Role selector — solo visible para SUPER_ADMIN */}
+      {currentRole === UserRole.SUPER_ADMIN && (
+        <div className="p-4 mx-4 mb-4 bg-slate-900/40 rounded-2xl border border-white/10 shadow-inner shrink-0">
+          <p className="text-[9px] text-white/40 mb-2 font-bold uppercase tracking-widest flex items-center gap-2">
+            <ShieldCheck size={10} /> Rol de Operación
+          </p>
+          <select
+            value={currentRole}
+            onChange={e => onRoleChange(e.target.value as UserRole)}
+            className="w-full bg-[#002D5A] text-white text-xs font-bold border border-white/20 rounded-xl p-3 outline-none cursor-pointer hover:bg-[#003A75] transition-all focus:ring-2 ring-turqui/40"
+          >
+            <option value={UserRole.SUPER_ADMIN}>Super Admin</option>
+            <option value={UserRole.SUPERVISORA}>Supervisora Táctica</option>
+            <option value={UserRole.LIDER_MINISTERIO}>Líder Ministerio</option>
+            <option value={UserRole.MIEMBRO}>Miembro</option>
+          </select>
+        </div>
+      )}
 
       {/* Logout */}
       <div className="px-6 pb-6 shrink-0 border-t border-white/5">

@@ -1,24 +1,14 @@
 import React, { useState } from 'react';
-import { UserRole, User } from '../types';
-import { quickLogin, sessionToUser } from '../services/authService';
+import { User } from '../types';
+import { sessionToUser } from '../services/authService';
 import {
   firebaseLogin, firebaseRegister, googleLogin, searchCandidates,
   mapFirebaseError, getFirebaseErrorCode, MatchCandidate,
 } from '../services/firebaseAuthService';
 import {
-  LogIn, Eye, EyeOff, Shield, Users, MonitorPlay, Heart,
-  Wifi, WifiOff, UserPlus, ChevronRight, Check, Clock,
+  LogIn, Eye, EyeOff, Wifi, WifiOff, UserPlus, ChevronRight, Check,
 } from 'lucide-react';
 import { airtableIsActive } from '../services/airtableService';
-
-// ─── Acceso rápido demo ───────────────────────────────────────────────────────
-
-const QUICK_ROLES = [
-  { role: UserRole.SUPER_ADMIN,      label: 'Pastor / Admin',  sub: 'Acceso total al sistema',    icon: Shield,      border: 'hover:border-[#004182]/40', iconColor: 'text-[#004182]' },
-  { role: UserRole.SUPERVISORA,      label: 'Supervisora',     sub: 'Gestión de eje apostólico',  icon: Users,       border: 'hover:border-purple-300',   iconColor: 'text-purple-500' },
-  { role: UserRole.LIDER_MINISTERIO, label: 'Developer / CSI', sub: 'Acceso total · Líder Medios',icon: MonitorPlay, border: 'hover:border-[#49D1C5]/60', iconColor: 'text-[#49D1C5]' },
-  { role: UserRole.MIEMBRO,          label: 'Miembro',         sub: 'Vista de equipo de servicio',icon: Heart,       border: 'hover:border-emerald-300',  iconColor: 'text-emerald-500' },
-];
 
 // ─── SVG Logo TAFE ────────────────────────────────────────────────────────────
 
@@ -60,7 +50,7 @@ const TafeSvgLogo: React.FC<{ size?: number; white?: boolean }> = ({ size = 120,
 interface LoginProps { onLogin: (user: User) => void; }
 
 type Tab  = 'login' | 'register';
-type Step = 'form' | 'matching' | 'pending';
+type Step = 'form' | 'matching';
 
 // ─── Componente ───────────────────────────────────────────────────────────────
 
@@ -131,14 +121,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const handleRegisterConfirm = async (recordId?: string) => {
     resetError(); setLoading(true);
     try {
-      const { session, isPending } = await firebaseRegister(
+      const { session } = await firebaseRegister(
         regEmail.trim(), regPassword, regName.trim(), recordId
       );
-      if (isPending) {
-        setRegStep('pending');
-      } else {
-        onLogin(sessionToUser(session));
-      }
+      onLogin(sessionToUser(session));
     } catch (err) {
       const code = getFirebaseErrorCode(err);
       setError(mapFirebaseError(code));
@@ -153,26 +139,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const handleGoogleLogin = async () => {
     resetError(); setLoading(true);
     try {
-      const { session, isPending } = await googleLogin();
-      if (isPending) {
-        setTab('register');
-        setRegStep('pending');
-        setRegEmail(session.name); // reutilizamos para mostrar nombre
-      } else {
-        onLogin(sessionToUser(session));
-      }
+      const { session } = await googleLogin();
+      onLogin(sessionToUser(session));
     } catch (err) {
       setError(mapFirebaseError(getFirebaseErrorCode(err)));
     } finally {
       setLoading(false);
     }
-  };
-
-  // ── Acceso rápido demo ────────────────────────────────────────────────────
-
-  const handleQuickLogin = (role: UserRole) => {
-    const session = quickLogin(role);
-    onLogin(sessionToUser(session));
   };
 
   // ── Render helpers ────────────────────────────────────────────────────────
@@ -334,28 +307,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     </div>
   );
 
-  const renderPending = () => (
-    <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm text-center space-y-4">
-      <div className="w-16 h-16 bg-amber-50 border border-amber-200 rounded-full flex items-center justify-center mx-auto">
-        <Clock size={28} className="text-amber-500"/>
-      </div>
-      <div>
-        <h3 className="font-bold text-slate-800 text-lg">Solicitud enviada</h3>
-        <p className="text-sm text-slate-500 mt-2 leading-relaxed">
-          Tu cuenta fue creada. Un administrador revisará tu perfil y te asignará acceso al sistema.
-          Recibirás confirmación pronto.
-        </p>
-      </div>
-      <p className="text-xs text-slate-400">
-        Cuenta registrada como: <strong className="text-slate-600">{regEmail}</strong>
-      </p>
-      <button onClick={() => { setRegStep('form'); switchTab('login'); }}
-        className="text-sm text-[#004182] font-semibold hover:underline">
-        Ir al inicio de sesión
-      </button>
-    </div>
-  );
-
   // ── Render principal ──────────────────────────────────────────────────────
 
   return (
@@ -442,33 +393,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
           {/* Formulario activo */}
           {tab === 'login'    && renderLoginForm()}
-          {tab === 'register' && regStep === 'form'     && renderRegisterForm()}
-          {tab === 'register' && regStep === 'matching'  && renderMatching()}
-          {tab === 'register' && regStep === 'pending'   && renderPending()}
-
-          {/* Acceso rápido (dev) */}
-          {regStep === 'form' && (
-            <div className="mt-7">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex-1 h-px bg-slate-200"/>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">Acceso Rápido · Demo</span>
-                <div className="flex-1 h-px bg-slate-200"/>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                {QUICK_ROLES.map(r => {
-                  const Icon = r.icon;
-                  return (
-                    <button key={r.role} onClick={() => handleQuickLogin(r.role)}
-                      className={`bg-white border border-slate-200 rounded-2xl p-4 text-left transition-all group cursor-pointer hover:shadow-md ${r.border}`}>
-                      <Icon size={20} className={`mb-2 ${r.iconColor}`}/>
-                      <p className="text-xs font-bold text-slate-800 leading-tight">{r.label}</p>
-                      <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">{r.sub}</p>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          {tab === 'register' && regStep === 'form'    && renderRegisterForm()}
+          {tab === 'register' && regStep === 'matching' && renderMatching()}
 
           <p className="text-center text-[10px] text-slate-300 mt-6">TAFE ERP v2026 · Iglesia TAFE · iglesiatafe.com</p>
         </div>

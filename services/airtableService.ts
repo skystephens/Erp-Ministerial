@@ -541,7 +541,7 @@ export type ProspectoAirtable = {
 export async function getProspectos(): Promise<ProspectoAirtable[]> {
   if (!isConfigured()) return [];
   try {
-    const formula = encodeURIComponent(`AND({Rol}="PROSPECTO",{Firebase_UID}!="")`);
+    const formula = encodeURIComponent(`AND({Rol}="MIEMBRO",{Firebase_UID}!="")`);
     const res  = await fetch(`${BASE_URL}/${BASE_ID}/${MIEMBROS_TABLE}?filterByFormula=${formula}`, { headers: getHeaders() });
     const data = await res.json();
     return ((data.records ?? []) as AirtableRecord<Record<string,string>>[]).map(r => ({
