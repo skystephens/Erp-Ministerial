@@ -225,7 +225,7 @@ const App: React.FC = () => {
       case 'pastoral_inbox': return <BuzonPeticiones user={currentUser} users={users} initialRequests={petitions} onUpdateRequests={setPetitions} />;
       case 'grupos':         return <Grupos currentRole={currentUser.role} users={users} groups={groups} onUpdateGroups={setGroups} />;
       case 'directory':      return <Directory currentUser={currentUser} onCreateProspect={handleCreateProspect} />;
-      case 'admin_mgmt':     return <AdminManagement users={users} tasks={tasks} petitions={petitions} onApprove={handleApproveUser} onImport={handleImportData} />;
+      case 'admin_mgmt':     return <AdminManagement users={users} onApprove={handleApproveUser} />;
       default:               return <Dashboard role={currentUser.role} />;
     }
   };
