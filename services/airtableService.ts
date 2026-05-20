@@ -526,6 +526,49 @@ export const getAsistenciaMinisterio = (ministerio?: string, fecha?: string) => 
   return fetchFromBase<AsistenciaMinisterioFields>(ASISTENCIA_BASE_ID, 'Tabla 3: Asistencia', formula);
 };
 
+// ─── Gestión de Prospectos (Firebase Auth → Airtable) ────────────────────────
+
+const MIEMBROS_TABLE = encodeURIComponent('[DB] Miembros');
+
+export type ProspectoAirtable = {
+  recordId:   string;
+  nombre:     string;
+  email:      string;
+  ministerio: string;
+  eje:        string;
+};
+
+export async function getProspectos(): Promise<ProspectoAirtable[]> {
+  if (!isConfigured()) return [];
+  try {
+    const formula = encodeURIComponent(`AND({Rol}="PROSPECTO",{Firebase_UID}!="")`);
+    const res  = await fetch(`${BASE_URL}/${BASE_ID}/${MIEMBROS_TABLE}?filterByFormula=${formula}`, { headers: getHeaders() });
+    const data = await res.json();
+    return ((data.records ?? []) as AirtableRecord<Record<string,string>>[]).map(r => ({
+      recordId:   r.id,
+      nombre:     r.fields['Nombre_Completo'] ?? '',
+      email:      r.fields['Email']           ?? '',
+      ministerio: r.fields['Ministerio_ID']   ?? '',
+      eje:        r.fields['Eje_ID']          ?? '',
+    }));
+  } catch { return []; }
+}
+
+export async function aprobarProspecto(recordId: string, rol: string, ministerio: string, eje: string): Promise<void> {
+  await fetch(`${BASE_URL}/${BASE_ID}/${MIEMBROS_TABLE}/${recordId}`, {
+    method: 'PATCH',
+    headers: getHeaders(),
+    body: JSON.stringify({ fields: { Rol: rol, Ministerio_ID: ministerio, Eje_ID: eje } }),
+  });
+}
+
+export async function rechazarProspecto(recordId: string): Promise<void> {
+  await fetch(`${BASE_URL}/${BASE_ID}/${MIEMBROS_TABLE}/${recordId}`, {
+    method: 'DELETE',
+    headers: getHeaders(),
+  });
+}
+
 // --- Sync híbrido: crea tarea y registra aporte en Banco_Tiempo ---
 export const syncTareaConBanco = async (
   tarea: TareaFields,
