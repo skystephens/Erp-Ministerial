@@ -39,20 +39,26 @@ async function fetchMiembros(formula: string): Promise<AirtableRecord[]> {
     const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE}?filterByFormula=${encodeURIComponent(formula)}`;
     const res  = await fetch(url, { headers: airtableHeaders() });
     const data = await res.json();
+    if (data.error) console.warn('[Airtable] fetchMiembros error:', data.error, data.message);
     return (data.records ?? []) as AirtableRecord[];
-  } catch {
+  } catch (e) {
+    console.error('[Airtable] fetchMiembros failed:', e);
     return [];
   }
 }
 
 async function patchMiembro(recordId: string, fields: Partial<AirtableMiembro>) {
   try {
-    await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE}/${recordId}`, {
+    const res = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE}/${recordId}`, {
       method: 'PATCH',
       headers: airtableHeaders(),
       body: JSON.stringify({ fields }),
     });
-  } catch { /* log silently */ }
+    const data = await res.json();
+    if (data.error) console.warn('[Airtable] patchMiembro error:', data.error, data.message);
+  } catch (e) {
+    console.error('[Airtable] patchMiembro failed:', e);
+  }
 }
 
 async function createMiembro(fields: AirtableMiembro): Promise<AirtableRecord | null> {
@@ -62,8 +68,14 @@ async function createMiembro(fields: AirtableMiembro): Promise<AirtableRecord | 
       headers: airtableHeaders(),
       body: JSON.stringify({ fields }),
     });
-    return await res.json() as AirtableRecord;
-  } catch {
+    const data = await res.json();
+    if (data.error) {
+      console.warn('[Airtable] createMiembro error:', data.error, data.message);
+      return null;
+    }
+    return data as AirtableRecord;
+  } catch (e) {
+    console.error('[Airtable] createMiembro failed:', e);
     return null;
   }
 }
