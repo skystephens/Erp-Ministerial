@@ -1,6 +1,8 @@
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
   updateProfile,
   signOut,
   User as FirebaseUser,
@@ -182,6 +184,39 @@ export async function firebaseRegister(
   }
 
   const session = buildSession(user, record);
+  localStorage.setItem('tafe_session', JSON.stringify(session));
+  return { session, isPending };
+}
+
+export async function googleLogin(): Promise<{ session: AuthSession; isPending: boolean }> {
+  const provider = new GoogleAuthProvider();
+  const { user }  = await signInWithPopup(auth, provider);
+
+  // Buscar por UID primero, luego por email de Google
+  let records = await fetchMiembros(`{Firebase_UID}="${user.uid}"`);
+  let isPending = false;
+
+  if (!records.length && user.email) {
+    records = await fetchMiembros(`{Email}="${user.email}"`);
+    if (records.length) {
+      await patchMiembro(records[0].id, { Firebase_UID: user.uid, Email: user.email });
+    }
+  }
+
+  if (!records.length) {
+    // Crear PROSPECTO automáticamente con datos de Google
+    const created = await createMiembro({
+      ID_Miembro:      `PROSP_${Date.now()}`,
+      Nombre_Completo: user.displayName ?? user.email ?? 'Usuario Google',
+      Email:           user.email ?? '',
+      Firebase_UID:    user.uid,
+      Rol:             'PROSPECTO',
+    });
+    records   = created ? [created] : [];
+    isPending = true;
+  }
+
+  const session = buildSession(user, records[0]);
   localStorage.setItem('tafe_session', JSON.stringify(session));
   return { session, isPending };
 }
