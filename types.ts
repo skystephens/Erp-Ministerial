@@ -80,15 +80,22 @@ export interface Task {
   assignedTo: string;
   dueDate: string;
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'OVERDUE' | 'INVITED';
-  category: 'DISEÑO' | 'TECNICO' | 'CONTENIDO' | 'LOGISTICA' | 'MENSAJE' | 'TAFE_NEWS';
+  category: 'DISEÑO' | 'TECNICO' | 'CONTENIDO' | 'LOGISTICA' | 'MENSAJE' | 'TAFE_NEWS'
+           | 'BRIGADA' | 'RECOPILACION' | 'PASTORAL' | 'COORDINACION';
   isUrgent?: boolean;
   axis?: ApostolicAxis;
   requiredSkill?: string;
-  
+
   // Metadatos de Estrategia
   teamSizeRequired?: number;
   estimatedHours?: number;
   priority?: 'BAJA' | 'MEDIA' | 'ALTA' | 'CRITICA';
+
+  // Tarea ministerial asignada por liderazgo
+  isMinisterialTask?: boolean;
+  createdBy?: string;
+  createdByRole?: string;
+  targetMinistry?: string;
 }
 
 export interface PrayerRequest {

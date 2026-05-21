@@ -192,7 +192,7 @@ const App: React.FC = () => {
           onDelete={id => setContentPieces(prev => prev.filter(p => p.id !== id))}
         />
       );
-      case 'projects':      return <ProjectManager user={currentUser} tasks={tasks} schema={axisSchema} onUpdateSchema={setAxisSchema} />;
+      case 'projects':      return <ProjectManager user={currentUser} tasks={tasks} schema={axisSchema} onUpdateSchema={setAxisSchema} onAddTask={handleAddTask} />;
       case 'operations':    return <Operations role={currentUser.role} tasks={tasks} setTasks={setTasks} />;
       case 'orden_del_dia': return <OrdenDelDia role={currentUser.role} />;
       case 'timebank':      return <TimeBank role={currentUser.role} user={currentUser} />;
@@ -220,6 +220,10 @@ const App: React.FC = () => {
           role={currentUser.role}
           users={users}
           sessions={attendance}
+          tasks={tasks}
+          onUpdateTask={(taskId, status) =>
+            setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status } : t))
+          }
         />
       );
       case 'pastoral_inbox': return <BuzonPeticiones user={currentUser} users={users} initialRequests={petitions} onUpdateRequests={setPetitions} />;

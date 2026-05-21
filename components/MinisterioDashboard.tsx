@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { User, UserRole, AttendanceSession } from '../types';
-import { Users, ClipboardCheck, CheckSquare, Square, Star } from 'lucide-react';
+import { User, UserRole, AttendanceSession, Task } from '../types';
+import { Users, ClipboardCheck, CheckSquare, Square, Star, ListChecks, Circle, PlayCircle, CheckCircle2, AlertTriangle, Flag } from 'lucide-react';
 import { MINISTRY_DETAILS, MINISTRY_MEMBERS, MINISTRY_HIERARCHY } from '../constants';
 
 interface MinisterioDashboardProps {
@@ -8,10 +8,12 @@ interface MinisterioDashboardProps {
   role: UserRole;
   users: User[];
   sessions: AttendanceSession[];
+  tasks?: Task[];
+  onUpdateTask?: (taskId: string, status: Task['status']) => void;
 }
 
 const MinisterioDashboard: React.FC<MinisterioDashboardProps> = ({
-  ministry, role, users, sessions,
+  ministry, role, users, sessions, tasks = [], onUpdateTask,
 }) => {
   if (!ministry) {
     return (
@@ -41,6 +43,16 @@ const MinisterioDashboard: React.FC<MinisterioDashboardProps> = ({
 
   const details = MINISTRY_DETAILS[ministry];
   const totalSessions = sessions.filter(s => s.ministry === ministry).length;
+
+  // Tareas ministeriales asignadas por liderazgo a este ministerio
+  const ministerialTasks = tasks.filter(
+    t => t.isMinisterialTask && (t.targetMinistry === ministry || t.ministry === ministry)
+  ).sort((a, b) => {
+    const order = { CRITICA: 0, ALTA: 1, MEDIA: 2, BAJA: 3 };
+    return (order[a.priority ?? 'MEDIA'] ?? 2) - (order[b.priority ?? 'MEDIA'] ?? 2);
+  });
+
+  const pendingMinisterialCount = ministerialTasks.filter(t => t.status === 'PENDING' || t.status === 'IN_PROGRESS').length;
 
   const avgPct =
     recentSessions.length > 0
@@ -197,6 +209,108 @@ const MinisterioDashboard: React.FC<MinisterioDashboardProps> = ({
             </div>
           )}
         </div>
+      </div>
+
+      {/* ── Tareas Generales asignadas por liderazgo ───────────────────────── */}
+      <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="font-montserrat font-bold text-slate-800 flex items-center gap-3">
+            <ListChecks className="text-turqui" size={18} />
+            Tareas Generales
+            {pendingMinisterialCount > 0 && (
+              <span className="bg-turqui text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                {pendingMinisterialCount}
+              </span>
+            )}
+          </h3>
+          <span className="text-[10px] text-slate-400 font-medium">Asignadas por Supervisora / Pastor</span>
+        </div>
+
+        {ministerialTasks.length === 0 ? (
+          <div className="py-12 text-center text-slate-300 text-sm italic">
+            No hay tareas asignadas por liderazgo para este ministerio.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {ministerialTasks.map(task => {
+              const statusCycle: Record<Task['status'], Task['status']> = {
+                PENDING: 'IN_PROGRESS',
+                IN_PROGRESS: 'COMPLETED',
+                COMPLETED: 'COMPLETED',
+                OVERDUE: 'IN_PROGRESS',
+                INVITED: 'PENDING',
+              };
+              const statusColors: Record<Task['status'], string> = {
+                PENDING:     'bg-slate-100 text-slate-500',
+                IN_PROGRESS: 'bg-blue-50 text-blue-600',
+                COMPLETED:   'bg-emerald-50 text-emerald-600',
+                OVERDUE:     'bg-red-50 text-red-500',
+                INVITED:     'bg-slate-100 text-slate-400',
+              };
+              const statusLabels: Record<Task['status'], string> = {
+                PENDING: 'Pendiente', IN_PROGRESS: 'En Proceso',
+                COMPLETED: 'Completada', OVERDUE: 'Atrasada', INVITED: 'Invitada',
+              };
+              const categoryColors: Partial<Record<Task['category'], string>> = {
+                BRIGADA:      'bg-orange-100 text-orange-700',
+                RECOPILACION: 'bg-blue-100 text-blue-700',
+                PASTORAL:     'bg-purple-100 text-purple-700',
+                COORDINACION: 'bg-emerald-100 text-emerald-700',
+                LOGISTICA:    'bg-amber-100 text-amber-700',
+                CONTENIDO:    'bg-pink-100 text-pink-700',
+              };
+              const categoryLabels: Partial<Record<Task['category'], string>> = {
+                BRIGADA: 'Brigada', RECOPILACION: 'Recopilación', PASTORAL: 'Pastoral',
+                COORDINACION: 'Coordinación', LOGISTICA: 'Logística', CONTENIDO: 'Contenido',
+              };
+
+              return (
+                <div key={task.id} className={`flex items-start gap-4 p-5 rounded-2xl border transition-all ${
+                  task.status === 'COMPLETED' ? 'bg-emerald-50/40 border-emerald-100' :
+                  task.priority === 'CRITICA' ? 'bg-red-50/30 border-red-100' :
+                  task.priority === 'ALTA' ? 'bg-orange-50/30 border-orange-100' :
+                  'bg-slate-50 border-slate-100'
+                }`}>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${categoryColors[task.category] ?? 'bg-slate-100 text-slate-500'}`}>
+                        {categoryLabels[task.category] ?? task.category}
+                      </span>
+                      {(task.priority === 'CRITICA' || task.priority === 'ALTA') && (
+                        <span className="flex items-center gap-1 text-[9px] font-bold text-red-600">
+                          <Flag size={9} /> {task.priority}
+                        </span>
+                      )}
+                    </div>
+                    <p className={`text-sm font-bold text-slate-800 mb-0.5 ${task.status === 'COMPLETED' ? 'line-through opacity-50' : ''}`}>
+                      {task.title}
+                    </p>
+                    {task.description && (
+                      <p className="text-xs text-slate-500 leading-relaxed mb-1">{task.description}</p>
+                    )}
+                    <p className="text-[10px] text-slate-400">
+                      Asignada por: <span className="font-bold text-navy-tafe/60">{task.createdBy}</span>
+                      {task.dueDate && <> · Fecha límite: <span className="font-bold">{task.dueDate}</span></>}
+                    </p>
+                  </div>
+                  {onUpdateTask && task.status !== 'COMPLETED' && (
+                    <button
+                      onClick={() => onUpdateTask(task.id, statusCycle[task.status])}
+                      className={`flex-shrink-0 px-3 py-2 text-[10px] font-bold rounded-xl border transition-all hover:scale-105 ${statusColors[task.status]}`}
+                    >
+                      {task.status === 'PENDING' ? 'Iniciar' : 'Completar'}
+                    </button>
+                  )}
+                  {task.status === 'COMPLETED' && (
+                    <span className="flex-shrink-0 flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-100">
+                      <CheckCircle2 size={12} /> Listo
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
