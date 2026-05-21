@@ -111,8 +111,9 @@ export const NAV_SECTIONS: NavSection[] = [
     icon: <UsersRound size={16} />,
     items: [
       { id: 'grupos',          label: 'Grupos & Células', icon: <Flame size={18} /> },
-      { id: 'directory',       label: 'Directorio',       icon: <Users size={18} />,    roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
-      { id: 'crm_seguimiento', label: 'CRM Seguimiento',  icon: <UserCheck size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
+      { id: 'directory',       label: 'Directorio',       icon: <Users size={18} />,        roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
+      { id: 'evangelizados',   label: 'Evangelizados',    icon: <HeartHandshake size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
+      { id: 'crm_seguimiento', label: 'CRM Seguimiento',  icon: <UserCheck size={18} />,    roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
       { id: 'pastoral_inbox',  label: 'Buzón Pastoral',   icon: <Inbox size={18} /> },
     ],
   },

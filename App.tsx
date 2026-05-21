@@ -17,6 +17,7 @@ import Grupos, { initialGroups } from './components/Grupos';
 import ContentManager from './components/ContentManager';
 import Asistencia from './components/Asistencia';
 import CRMSeguimiento from './components/CRMSeguimiento';
+import Evangelizados from './components/Evangelizados';
 import MinisterioDashboard from './components/MinisterioDashboard';
 import OrdenDelDia from './components/OrdenDelDia';
 import Login from './components/Login';
@@ -203,6 +204,12 @@ const App: React.FC = () => {
           users={users}
           sessions={attendance}
           setSessions={setAttendance}
+          currentUserName={currentUser.name}
+        />
+      );
+      case 'evangelizados': return (
+        <Evangelizados
+          role={currentUser.role}
           currentUserName={currentUser.name}
         />
       );
