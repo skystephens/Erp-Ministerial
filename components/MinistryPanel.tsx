@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { User, Task, UserRole } from '../types';
 import { Bell, ChevronDown } from 'lucide-react';
-import HorarioCSI from './HorarioCSI';
 import TurnoCSI from './TurnoCSI';
 
 interface MinistryPanelProps {
@@ -88,11 +87,6 @@ const MinistryPanel: React.FC<MinistryPanelProps> = ({ user, tasks }) => {
       {/* Turno de Servicio CSI — tabla principal */}
       <section className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
         <TurnoCSI canEdit={canEdit} />
-      </section>
-
-      {/* Horario de Servicios CSI — calendario */}
-      <section className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
-        <HorarioCSI canEdit={canEdit} />
       </section>
 
     </div>
