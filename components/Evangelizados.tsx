@@ -1,10 +1,18 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { UserRole } from '../types';
 import {
   Heart, Plus, Search, X, ChevronDown, ChevronUp,
   Phone, MapPin, User, Calendar, Tag, Save, Loader2,
-  Filter, Download,
+  Filter, Download, RefreshCw,
 } from 'lucide-react';
+import {
+  airtableIsActive,
+  getEvangelizados,
+  createEvangelizado,
+  updateEvangelizado,
+  deleteEvangelizado,
+  EvangelizadoFields,
+} from '../services/airtableService';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -18,6 +26,7 @@ export type EstadoPastoreo =
 
 export interface Evangelizado {
   id: string;
+  airtableRecordId?: string;
   nombre: string;
   telefono?: string;
   fechaEvangelismo: string;
@@ -114,6 +123,8 @@ interface EvangelizadosProps {
 
 const Evangelizados: React.FC<EvangelizadosProps> = ({ role, currentUserName }) => {
   const [records, setRecords] = useState<Evangelizado[]>(loadData);
+  const [loading, setLoading] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'synced' | 'local'>('local');
   const [search, setSearch] = useState('');
   const [filterEstado, setFilterEstado] = useState<EstadoPastoreo | 'TODOS'>('TODOS');
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -121,6 +132,37 @@ const Evangelizados: React.FC<EvangelizadosProps> = ({ role, currentUserName }) 
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+
+  // ── Carga desde Airtable al montar ──────────────────────────────────────────
+  useEffect(() => {
+    if (!airtableIsActive()) { setSyncStatus('local'); return; }
+    setLoading(true);
+    getEvangelizados()
+      .then(atRecords => {
+        if (atRecords.length === 0) { setSyncStatus('synced'); return; }
+        const mapped: Evangelizado[] = atRecords.map(r => ({
+          id: r.id,
+          airtableRecordId: r.id,
+          nombre: r.fields.Nombre ?? '(sin nombre)',
+          telefono: r.fields.Telefono,
+          fechaEvangelismo: r.fields.Fecha_Evangelismo ?? r.createdTime.split('T')[0],
+          zona: r.fields.Zona,
+          ejeInteres: r.fields.Eje_Interes,
+          estado: (r.fields.Estado_Pastoreo as EstadoPastoreo) ?? 'NUEVO',
+          asignadoA: r.fields.Asignado_A,
+          notas: r.fields.Notas,
+          ministerioDestino: r.fields.Ministerio_Destino,
+          edad: r.fields.Edad,
+          creadoPor: r.fields.Creado_Por,
+          fechaCreacion: r.createdTime.split('T')[0],
+        }));
+        saveData(mapped);
+        setRecords(mapped);
+        setSyncStatus('synced');
+      })
+      .catch(() => { setSyncStatus('local'); })
+      .finally(() => setLoading(false));
+  }, []);
 
   const canEdit = role === UserRole.SUPER_ADMIN || role === UserRole.SUPERVISORA || role === UserRole.LIDER_MINISTERIO;
 
@@ -159,16 +201,41 @@ const Evangelizados: React.FC<EvangelizadosProps> = ({ role, currentUserName }) 
     setShowForm(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.nombre.trim()) return;
     setSaving(true);
-    setTimeout(() => {
+
+    const atFields: EvangelizadoFields = {
+      Nombre: form.nombre,
+      Telefono: form.telefono || undefined,
+      Fecha_Evangelismo: form.fechaEvangelismo || undefined,
+      Zona: form.zona || undefined,
+      Eje_Interes: form.ejeInteres || undefined,
+      Estado_Pastoreo: form.estado,
+      Asignado_A: form.asignadoA || undefined,
+      Notas: form.notas || undefined,
+      Ministerio_Destino: form.ministerioDestino || undefined,
+      Edad: form.edad,
+      Creado_Por: form.creadoPor || undefined,
+    };
+
+    try {
       let next: Evangelizado[];
       if (editId) {
+        const existing = records.find(r => r.id === editId);
+        if (existing?.airtableRecordId && airtableIsActive()) {
+          await updateEvangelizado(existing.airtableRecordId, atFields);
+        }
         next = records.map(r => r.id === editId ? { ...r, ...form } : r);
       } else {
+        let airtableRecordId: string | undefined;
+        if (airtableIsActive()) {
+          const created = await createEvangelizado(atFields);
+          airtableRecordId = created.id;
+        }
         const nuevo: Evangelizado = {
-          id: `ev_${Date.now()}`,
+          id: airtableRecordId ?? `ev_${Date.now()}`,
+          airtableRecordId,
           fechaCreacion: new Date().toISOString().split('T')[0],
           ...form,
         };
@@ -177,19 +244,30 @@ const Evangelizados: React.FC<EvangelizadosProps> = ({ role, currentUserName }) 
       saveData(next);
       setRecords(next);
       setShowForm(false);
-      setSaving(false);
       setEditId(null);
-    }, 300);
+    } catch (err) {
+      console.error('Error guardando evangelizado:', err);
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    const target = records.find(r => r.id === id);
+    if (target?.airtableRecordId && airtableIsActive()) {
+      try { await deleteEvangelizado(target.airtableRecordId); } catch (e) { console.error(e); }
+    }
     const next = records.filter(r => r.id !== id);
     saveData(next);
     setRecords(next);
     setExpandedId(null);
   };
 
-  const updateEstado = (id: string, estado: EstadoPastoreo) => {
+  const updateEstado = async (id: string, estado: EstadoPastoreo) => {
+    const target = records.find(r => r.id === id);
+    if (target?.airtableRecordId && airtableIsActive()) {
+      try { await updateEvangelizado(target.airtableRecordId, { Estado_Pastoreo: estado }); } catch (e) { console.error(e); }
+    }
     const next = records.map(r => r.id === id ? { ...r, estado } : r);
     saveData(next);
     setRecords(next);
@@ -222,6 +300,15 @@ const Evangelizados: React.FC<EvangelizadosProps> = ({ role, currentUserName }) 
               <span className="px-3 py-1 bg-turqui/20 text-turqui text-[10px] font-bold rounded-lg uppercase tracking-widest border border-turqui/30">
                 Base de Datos · Evangelismo
               </span>
+              {loading && <Loader2 size={14} className="text-turqui animate-spin" />}
+              {!loading && syncStatus === 'synced' && (
+                <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-400">
+                  <RefreshCw size={10} /> Sincronizado con Airtable
+                </span>
+              )}
+              {!loading && syncStatus === 'local' && (
+                <span className="text-[9px] font-bold text-amber-400">Modo local</span>
+              )}
             </div>
             <h2 className="text-4xl font-montserrat font-bold">Evangelizados</h2>
             <p className="text-white/40 text-sm mt-2 italic">

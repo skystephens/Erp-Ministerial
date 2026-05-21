@@ -526,6 +526,35 @@ export const getAsistenciaMinisterio = (ministerio?: string, fecha?: string) => 
   return fetchFromBase<AsistenciaMinisterioFields>(ASISTENCIA_BASE_ID, 'Tabla 3: Asistencia', formula);
 };
 
+// --- Base de datos evangelismos ---
+export type EvangelizadoFields = {
+  Nombre: string;
+  Telefono?: string;
+  Fecha_Evangelismo?: string;
+  Zona?: string;
+  Eje_Interes?: string;
+  Estado_Pastoreo?: string;
+  Asignado_A?: string;
+  Notas?: string;
+  Ministerio_Destino?: string;
+  Edad?: number;
+  Creado_Por?: string;
+};
+
+const EVANGELIZADOS_TABLE = 'Base de datos evangelismos';
+
+export const getEvangelizados = () =>
+  fetchTable<EvangelizadoFields>(EVANGELIZADOS_TABLE);
+
+export const createEvangelizado = (fields: EvangelizadoFields) =>
+  createRecord<EvangelizadoFields>(EVANGELIZADOS_TABLE, fields);
+
+export const updateEvangelizado = (recordId: string, fields: Partial<EvangelizadoFields>) =>
+  updateRecord<EvangelizadoFields>(EVANGELIZADOS_TABLE, recordId, fields);
+
+export const deleteEvangelizado = (recordId: string) =>
+  deleteRecord(EVANGELIZADOS_TABLE, recordId);
+
 // ─── Gestión de Prospectos (Firebase Auth → Airtable) ────────────────────────
 
 const MIEMBROS_TABLE = encodeURIComponent('[DB] Miembros');
