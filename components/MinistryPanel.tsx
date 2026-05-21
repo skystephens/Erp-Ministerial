@@ -15,7 +15,6 @@ const MinistryPanel: React.FC<MinistryPanelProps> = ({ user, tasks }) => {
   const [activeMinistry, setActiveMinistry] = useState(user.ministry || supervisoraMinistries[0]);
   const [showSelector, setShowSelector] = useState(false);
 
-  const isMedios = activeMinistry === "CSI / Medios";
   const isSupervisora = user.role === UserRole.SUPERVISORA;
   const canEdit = user.role === UserRole.SUPER_ADMIN
     || user.role === UserRole.SUPERVISORA
@@ -87,11 +86,9 @@ const MinistryPanel: React.FC<MinistryPanelProps> = ({ user, tasks }) => {
       </div>
 
       {/* Turno de Servicio CSI — tabla principal */}
-      {isMedios && (
-        <section className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
-          <TurnoCSI canEdit={canEdit} />
-        </section>
-      )}
+      <section className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+        <TurnoCSI canEdit={canEdit} />
+      </section>
 
       {/* Horario de Servicios CSI — calendario */}
       <section className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
