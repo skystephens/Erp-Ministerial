@@ -394,6 +394,15 @@ const OrdenDelDia: React.FC<Props> = ({ role }) => {
     updateActiveMes(m => ({ ...m, [sec]:(m[sec] as any[]).filter((r:any) => r.id!==id) }));
   const addPrograRow = (sec: PrograSection, data: Record<string,string>) =>
     updateActiveMes(m => ({ ...m, [sec]:[...(m[sec] as any[]), { id:`${sec}_${Date.now()}`, ...data }] }));
+  const movePrograRow = (sec: PrograSection, id: string, dir: 'up' | 'down') =>
+    updateActiveMes(m => {
+      const arr = [...(m[sec] as any[])];
+      const idx = arr.findIndex((r: any) => r.id === id);
+      const swap = dir === 'up' ? idx - 1 : idx + 1;
+      if (swap < 0 || swap >= arr.length) return m;
+      [arr[idx], arr[swap]] = [arr[swap], arr[idx]];
+      return { ...m, [sec]: arr };
+    });
   const addTema = () => {
     if (!newTema.trim()) return;
     updateActiveMes(m => ({ ...m, temasMes:[...m.temasMes, newTema.trim()] }));
@@ -791,7 +800,7 @@ const OrdenDelDia: React.FC<Props> = ({ role }) => {
               {canEdit && <th className="w-16 px-2"/>}
             </tr></thead>
             <tbody>
-              {data.map((row:any) =>
+              {data.map((row:any, rowIdx: number) =>
                 editingPrograId===row.id ? (
                   <tr key={row.id} className="bg-blue-50">
                     {fields.map(f=>(
@@ -810,6 +819,8 @@ const OrdenDelDia: React.FC<Props> = ({ role }) => {
                     {fields.map(f=><td key={f.key} className="px-4 py-2.5 text-slate-700">{row[f.key]||'—'}</td>)}
                     {canEdit && (
                       <td className="px-2 py-2.5"><div className="flex gap-0.5">
+                        <button onClick={()=>movePrograRow(sectionKey,row.id,'up')} disabled={rowIdx===0} className="p-1 text-slate-300 hover:text-slate-600 rounded hover:bg-slate-100 disabled:opacity-20 transition-colors"><ChevronUp size={11}/></button>
+                        <button onClick={()=>movePrograRow(sectionKey,row.id,'down')} disabled={rowIdx===data.length-1} className="p-1 text-slate-300 hover:text-slate-600 rounded hover:bg-slate-100 disabled:opacity-20 transition-colors"><ChevronDown size={11}/></button>
                         <button onClick={()=>{ setEditingPrograId(row.id); setEditPrograForm({}); setAddingPrograSection(null); }} className="p-1 text-slate-300 hover:text-blue-500 rounded hover:bg-blue-50 transition-colors"><Pencil size={11}/></button>
                         <button onClick={()=>deletePrograRow(sectionKey,row.id)} className="p-1 text-slate-300 hover:text-red-500 rounded hover:bg-red-50 transition-colors"><Trash2 size={11}/></button>
                       </div></td>
