@@ -14,7 +14,7 @@ import {
 type TipoServicio = 'viernes' | 'domingo' | 'especial';
 type TipoNovedad  = 'warn' | 'info' | 'ok';
 type GrupoEquipo  = 'medios' | 'alabanza' | 'pastoral';
-type PrograSection = 'viernes' | 'domingos' | 'ayunos' | 'eventos' | 'especiales';
+type PrograSection = 'viernes' | 'domingos' | 'ayunos' | 'eventos' | 'especiales' | 'evangelismos';
 type IconKey =
   | 'imagen' | 'countdown' | 'cabezote' | 'ministro' | 'canciones'
   | 'ofrendas' | 'video' | 'tafe' | 'gracias' | 'pastor'
@@ -29,13 +29,15 @@ interface EquipoMiembro  { id: string; name: string; role: string; grupo: GrupoE
 interface ServicioViernes { id: string; fechaLabel: string; ministro: string; tema: string; oracion: string; }
 interface ServicioDomingo { id: string; fechaLabel: string; primerServicio: string; segundoServicio: string; tema: string; }
 interface EspecialServicio{ id: string; fechaLabel: string; nombre: string; }
-interface Ayuno           { id: string; fechaLabel: string; ministerio: string; tema: string; }
-interface EventoMes       { id: string; fechaLabel: string; nombre: string; lugar: string; hora: string; }
+interface Ayuno              { id: string; fechaLabel: string; ministerio: string; tema: string; }
+interface EventoMes         { id: string; fechaLabel: string; nombre: string; lugar: string; hora: string; }
+interface JornadaEvangelismo { id: string; fechaLabel: string; barrio: string; hora: string; descripcion: string; }
 
 interface ProgramaMes {
   id: string; mesLabel: string; liderCargo: string; temasMes: string[];
   viernes: ServicioViernes[]; domingos: ServicioDomingo[];
   especiales: EspecialServicio[]; ayunos: Ayuno[]; eventos: EventoMes[];
+  evangelismos: JornadaEvangelismo[];
 }
 interface ServicioDetalle {
   id: string; tipo: TipoServicio;
@@ -76,7 +78,8 @@ const PROGRA_FIELDS: Record<PrograSection, { key: string; label: string; placeho
   domingos:  [{ key:'fechaLabel',label:'Fecha',placeholder:'ej: 3 mayo'},{ key:'primerServicio',label:'1er Serv. 08:00',placeholder:'Nombre'},{ key:'segundoServicio',label:'2do Serv. 10:00',placeholder:'Nombre'},{ key:'tema',label:'Tema',placeholder:'Tema'}],
   especiales:[{ key:'fechaLabel',label:'Fecha',placeholder:'ej: Sáb 14 mayo'},{ key:'nombre',label:'Nombre del servicio',placeholder:'ej: Vigilia de Oración'}],
   ayunos:    [{ key:'fechaLabel',label:'Fecha',placeholder:'ej: Sáb 9 mayo'},{ key:'ministerio',label:'Ministerio',placeholder:'Ministerio en ayuno'},{ key:'tema',label:'Tema',placeholder:'Tema del ayuno'}],
-  eventos:   [{ key:'fechaLabel',label:'Fecha',placeholder:'ej: Sáb 16 mayo'},{ key:'nombre',label:'Nombre',placeholder:'Nombre del evento'},{ key:'lugar',label:'Lugar',placeholder:'Lugar'},{ key:'hora',label:'Hora',placeholder:'ej: 4:00 pm'}],
+  eventos:       [{ key:'fechaLabel',label:'Fecha',placeholder:'ej: Sáb 16 mayo'},{ key:'nombre',label:'Nombre',placeholder:'Nombre del evento'},{ key:'lugar',label:'Lugar',placeholder:'Lugar'},{ key:'hora',label:'Hora',placeholder:'ej: 4:00 pm'}],
+  evangelismos:  [{ key:'fechaLabel',label:'Fecha',placeholder:'ej: Sáb 20 junio'},{ key:'barrio',label:'Barrio / Sector',placeholder:'ej: Las Palmas'},{ key:'hora',label:'Hora de cita',placeholder:'ej: 4:30 pm'},{ key:'descripcion',label:'Descripción',placeholder:'Ej: Jornada E1 · Conquista'}],
 };
 
 // ─── Defaults ─────────────────────────────────────────────────────────────────
@@ -140,7 +143,7 @@ const DEFAULT_PROGRAMA: ProgramaMes = {
     { id:'dm4', fechaLabel:'24 mayo', primerServicio:'LICETH LEVER',       segundoServicio:'LICETH LEVER',      tema:'Como luchar contra las distracciones' },
     { id:'dm5', fechaLabel:'31 mayo', primerServicio:'BENETT BISCAINO',    segundoServicio:'CLAUDIA DE LA HOZ', tema:'Puestos los ojos en Jesús' },
   ],
-  especiales:[], ayunos:[
+  especiales:[], evangelismos:[], ayunos:[
     { id:'ay1', fechaLabel:'Sáb 9 mayo',  ministerio:'MEDIOS',      tema:'LAS COSAS QUE NOS DISTRAEN' },
     { id:'ay2', fechaLabel:'Sáb 23 mayo', ministerio:'ANFITRIONES', tema:'COMO LUCHAR CONTRA LAS DISTRACCIONES' },
   ],
@@ -156,16 +159,20 @@ const buildInitialState = (): OrdenState => {
       const p = JSON.parse(saved);
       // Current multi-month format
       if (Array.isArray(p.meses)) {
-        return { meses: p.meses, activeMesId: p.activeMesId ?? p.meses[0]?.id ?? DEFAULT_PROGRAMA.id, servicioData: p.servicioData ?? {} };
+        return {
+          meses: p.meses.map((m: any) => ({ ...m, evangelismos: m.evangelismos ?? [] })),
+          activeMesId: p.activeMesId ?? p.meses[0]?.id ?? DEFAULT_PROGRAMA.id,
+          servicioData: p.servicioData ?? {},
+        };
       }
       // Previous single-month with servicioData
       if (p.servicioData !== undefined) {
-        const mes: ProgramaMes = { ...DEFAULT_PROGRAMA, ...(p.programaMes ?? {}), id: 'mes_mayo2026', especiales: p.programaMes?.especiales ?? [] };
+        const mes: ProgramaMes = { ...DEFAULT_PROGRAMA, ...(p.programaMes ?? {}), id: 'mes_mayo2026', especiales: p.programaMes?.especiales ?? [], evangelismos: p.programaMes?.evangelismos ?? [] };
         return { meses: [mes], activeMesId: mes.id, servicioData: p.servicioData };
       }
       // Oldest format
       if (p.programaMes) {
-        const mes: ProgramaMes = { ...DEFAULT_PROGRAMA, ...p.programaMes, id: 'mes_mayo2026', especiales: [] };
+        const mes: ProgramaMes = { ...DEFAULT_PROGRAMA, ...p.programaMes, id: 'mes_mayo2026', especiales: [], evangelismos: [] };
         return { meses: [mes], activeMesId: mes.id, servicioData: {} };
       }
     }
@@ -953,11 +960,18 @@ const OrdenDelDia: React.FC<Props> = ({ role }) => {
     ayunoSet.forEach(d   => push(d, { type: 'ayuno' }));
     evangelSet.forEach(d => push(d, { type: 'evangelismo' }));
 
-    activeMes.viernes.forEach((v: ServicioViernes)     => { const d = extractDay(v.fechaLabel); const ev = dayMap[d]?.find(e => e.type==='viernes'); if (ev && v.ministro) ev.label = v.ministro; });
-    activeMes.domingos.forEach((dm: ServicioDomingo)   => { const d = extractDay(dm.fechaLabel); const ev = dayMap[d]?.find(e => e.type==='domingo'); if (ev && dm.tema) ev.label = dm.tema; });
-    activeMes.ayunos.forEach((a: Ayuno)                => { const d = extractDay(a.fechaLabel); const ev = dayMap[d]?.find(e => e.type==='ayuno'); if (ev && a.ministerio) ev.label = a.ministerio; });
-    activeMes.especiales.forEach((e: EspecialServicio) => { const d = extractDay(e.fechaLabel); if (d) push(d, { type: 'especial', label: e.nombre }); });
-    activeMes.eventos.forEach((evn: EventoMes)         => { const d = extractDay(evn.fechaLabel); if (d) push(d, { type: 'evento', label: evn.nombre }); });
+    activeMes.viernes.forEach((v: ServicioViernes)              => { const d = extractDay(v.fechaLabel); const ev = dayMap[d]?.find(e => e.type==='viernes'); if (ev && v.ministro) ev.label = v.ministro; });
+    activeMes.domingos.forEach((dm: ServicioDomingo)            => { const d = extractDay(dm.fechaLabel); const ev = dayMap[d]?.find(e => e.type==='domingo'); if (ev && dm.tema) ev.label = dm.tema; });
+    activeMes.ayunos.forEach((a: Ayuno)                         => { const d = extractDay(a.fechaLabel); const ev = dayMap[d]?.find(e => e.type==='ayuno'); if (ev && a.ministerio) ev.label = a.ministerio; });
+    activeMes.especiales.forEach((e: EspecialServicio)          => { const d = extractDay(e.fechaLabel); if (d) push(d, { type: 'especial', label: e.nombre }); });
+    activeMes.eventos.forEach((evn: EventoMes)                  => { const d = extractDay(evn.fechaLabel); if (d) push(d, { type: 'evento', label: evn.nombre }); });
+    (activeMes.evangelismos ?? []).forEach((je: JornadaEvangelismo) => {
+      const d = extractDay(je.fechaLabel);
+      const marker = dayMap[d]?.find(e => e.type === 'evangelismo');
+      if (marker) {
+        marker.label = [je.barrio, je.hora].filter(Boolean).join(' · ');
+      }
+    });
 
     const EV_COLOR: Record<string, string> = {
       viernes: 'bg-emerald-100 text-emerald-700', domingo: 'bg-amber-100 text-amber-700',
@@ -1102,6 +1116,7 @@ const OrdenDelDia: React.FC<Props> = ({ role }) => {
         {renderPrograSection('viernes',   'Viernes de Ministración y Oración',        activeMes.viernes    as unknown as Record<string,string>[])}
         {renderPrograSection('domingos',  'Servicio Dominical — Oración de Apertura', activeMes.domingos   as unknown as Record<string,string>[])}
         {renderPrograSection('especiales','Servicios Especiales / Ad-hoc',            (activeMes.especiales??[]) as unknown as Record<string,string>[])}
+        {renderPrograSection('evangelismos','Jornadas de Evangelismo',                 (activeMes.evangelismos ?? []) as unknown as Record<string,string>[])}
         {renderPrograSection('ayunos',    'Ayunos',                                   activeMes.ayunos     as unknown as Record<string,string>[])}
         {renderPrograSection('eventos',   'Eventos del Mes',                          activeMes.eventos    as unknown as Record<string,string>[])}
       </div>
