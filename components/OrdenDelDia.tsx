@@ -261,8 +261,17 @@ const OrdenDelDia: React.FC<Props> = ({ role }) => {
           } catch { hasInitializedRef.current = true; }
           setSyncStatus('synced');
         } else {
+          // Tabla existe pero vacía — subir estado local para que otros dispositivos lo encuentren
           hasInitializedRef.current = true;
-          setSyncStatus('local');
+          const localJson = localStorage.getItem(STORAGE_KEY);
+          if (localJson) {
+            setSyncStatus('saving');
+            upsertConfigRecord('orden_del_dia_state', localJson)
+              .then(id => { if (id) { configRecordIdRef.current = id; setSyncStatus('synced'); } })
+              .catch(() => setSyncStatus('local'));
+          } else {
+            setSyncStatus('local');
+          }
         }
       })
       .catch(() => { hasInitializedRef.current = true; setSyncStatus('local'); });
