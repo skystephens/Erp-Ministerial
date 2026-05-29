@@ -598,6 +598,50 @@ export async function rechazarProspecto(recordId: string): Promise<void> {
   });
 }
 
+// --- Configuracion_App (tabla: key-value para estado de módulos) ---
+// Campos necesarios en Airtable: Clave (text, primary), Valor (long text), Actualizado (text)
+export type ConfigAppFields = {
+  Clave: string;
+  Valor: string;
+  Actualizado?: string;
+};
+
+export const getConfigRecord = async (clave: string): Promise<{ id: string; valor: string } | null> => {
+  if (!isConfigured()) return null;
+  try {
+    const records = await fetchTable<ConfigAppFields>('Configuracion_App', `{Clave}="${clave}"`);
+    if (!records[0]) return null;
+    return { id: records[0].id, valor: records[0].fields.Valor };
+  } catch { return null; }
+};
+
+export const upsertConfigRecord = async (
+  clave: string,
+  valor: string,
+  existingRecordId?: string,
+): Promise<string | undefined> => {
+  if (!isConfigured()) return undefined;
+  try {
+    if (existingRecordId) {
+      await updateRecord<ConfigAppFields>('Configuracion_App', existingRecordId, {
+        Valor: valor,
+        Actualizado: new Date().toISOString(),
+      });
+      return existingRecordId;
+    } else {
+      const rec = await createRecord<ConfigAppFields>('Configuracion_App', {
+        Clave: clave,
+        Valor: valor,
+        Actualizado: new Date().toISOString(),
+      });
+      return rec.id;
+    }
+  } catch (e) {
+    console.error('[Config] Error saving to Airtable:', e);
+    return undefined;
+  }
+};
+
 // --- Sync híbrido: crea tarea y registra aporte en Banco_Tiempo ---
 export const syncTareaConBanco = async (
   tarea: TareaFields,

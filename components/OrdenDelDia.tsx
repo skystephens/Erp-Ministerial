@@ -1,13 +1,14 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { UserRole } from '../types';
 import {
   Music2, Bell, Timer, Film, Mic2, Heart, PlayCircle,
   Newspaper, BookOpen, Sparkles, Star, ThumbsUp, Users,
   Pencil, Trash2, Check, X, AlertTriangle, Info as InfoIcon,
   Copy, ChevronDown, ChevronUp, Plus, Lock, User,
-  Image as ImageIcon, CalendarDays, Clock,
+  Image as ImageIcon, CalendarDays, Clock, Loader2, RefreshCw,
 } from 'lucide-react';
+import { airtableIsActive, getConfigRecord, upsertConfigRecord } from '../services/airtableService';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -203,6 +204,11 @@ const OrdenDelDia: React.FC<Props> = ({ role }) => {
   const canEdit = role === UserRole.SUPER_ADMIN || role === UserRole.LIDER_MINISTERIO;
 
   const [state,             setState]             = useState<OrdenState>(buildInitialState);
+  const [syncStatus,        setSyncStatus]        = useState<'idle'|'loading'|'saving'|'synced'|'local'>('idle');
+  const configRecordIdRef = useRef<string | undefined>(undefined);
+  const saveTimerRef      = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasInitializedRef = useRef(false);
+
   const [activeView,        setActiveView]        = useState<string>('mes');
   const [expandedId,        setExpandedId]        = useState<string | null>(null);
   const [editingId,         setEditingId]         = useState<string | null>(null);
@@ -236,7 +242,44 @@ const OrdenDelDia: React.FC<Props> = ({ role }) => {
   const [editingMeta,         setEditingMeta]         = useState<'mes' | 'lider' | null>(null);
   const [metaForm,            setMetaForm]            = useState('');
 
-  useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }, [state]);
+  // ── Carga inicial desde Airtable ────────────────────────────────────────────
+  useEffect(() => {
+    if (!airtableIsActive()) { setSyncStatus('local'); hasInitializedRef.current = true; return; }
+    setSyncStatus('loading');
+    getConfigRecord('orden_del_dia_state')
+      .then(result => {
+        if (result) {
+          configRecordIdRef.current = result.id;
+          try {
+            const remote = JSON.parse(result.valor) as OrdenState;
+            if (Array.isArray(remote.meses)) {
+              remote.meses = remote.meses.map((m: any) => ({ ...m, evangelismos: m.evangelismos ?? [] }));
+            }
+            hasInitializedRef.current = true;
+            setState(remote);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(remote));
+          } catch { hasInitializedRef.current = true; }
+          setSyncStatus('synced');
+        } else {
+          hasInitializedRef.current = true;
+          setSyncStatus('local');
+        }
+      })
+      .catch(() => { hasInitializedRef.current = true; setSyncStatus('local'); });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Persistencia: localStorage inmediata + Airtable con debounce ─────────────
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    if (!airtableIsActive() || !hasInitializedRef.current) return;
+    setSyncStatus('saving');
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(async () => {
+      const newId = await upsertConfigRecord('orden_del_dia_state', JSON.stringify(state), configRecordIdRef.current);
+      if (newId) { configRecordIdRef.current = newId; setSyncStatus('synced'); }
+    }, 2500);
+    return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
+  }, [state]);
 
   // ── Derived ────────────────────────────────────────────────────────────────
 
@@ -1134,6 +1177,28 @@ const OrdenDelDia: React.FC<Props> = ({ role }) => {
             Plantilla base para Easy Worship · visible para todo el equipo
             {!canEdit && <span className="inline-flex items-center gap-1 text-slate-400 text-xs"><Lock size={11}/> Solo lectura</span>}
           </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {syncStatus === 'loading' && (
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-slate-400 bg-slate-100 px-2.5 py-1.5 rounded-lg">
+              <Loader2 size={11} className="animate-spin"/> Cargando...
+            </span>
+          )}
+          {syncStatus === 'saving' && (
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-200 px-2.5 py-1.5 rounded-lg">
+              <Loader2 size={11} className="animate-spin"/> Guardando...
+            </span>
+          )}
+          {syncStatus === 'synced' && (
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-1.5 rounded-lg">
+              <RefreshCw size={11}/> Sincronizado
+            </span>
+          )}
+          {syncStatus === 'local' && (
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-slate-400 bg-slate-100 border border-slate-200 px-2.5 py-1.5 rounded-lg" title="Sin conexión a Airtable — los cambios se guardan solo en este dispositivo">
+              <Lock size={11}/> Solo local
+            </span>
+          )}
         </div>
       </div>
       {renderMonthSwitcher()}
