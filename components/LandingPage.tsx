@@ -171,7 +171,11 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
         <section
           ref={inicioRef} id="inicio"
           className="min-h-screen flex items-center justify-center relative overflow-hidden pt-16"
-          style={{ background: 'linear-gradient(135deg, #002a55 0%, #004182 50%, #00284f 100%)' }}
+          style={{
+            backgroundImage: 'linear-gradient(135deg, rgba(0,30,60,0.90) 0%, rgba(0,50,100,0.84) 50%, rgba(0,25,55,0.92) 100%), url(https://iglesiatafe.com/wp-content/uploads/2024/08/servicio-dominical-princip.jpg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center top',
+          }}
         >
           {/* Decorative rings */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -313,6 +317,20 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
               </div>
             </div>
 
+            {/* Galería de la comunidad */}
+            <div className="grid grid-cols-3 gap-4 mb-12">
+              <img
+                src="https://iglesiatafe.com/wp-content/uploads/2025/05/WhatsApp-Image-2025-05-25-at-8.02.05-AM.jpeg"
+                alt="Celebración 36 aniversario TAFE"
+                className="col-span-2 rounded-2xl w-full h-52 object-cover shadow-md"
+              />
+              <img
+                src="https://iglesiatafe.com/wp-content/uploads/2024/08/servicio-dominical-princip.jpg"
+                alt="Servicio dominical TAFE"
+                className="rounded-2xl w-full h-52 object-cover shadow-md"
+              />
+            </div>
+
             {/* ERP CTA */}
             <div className="bg-slate-50 rounded-2xl p-8 flex flex-col md:flex-row items-center gap-8">
               <div className="flex-1">
@@ -373,6 +391,15 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
                   <div className="text-white/50 text-xs">{s.sub}</div>
                 </div>
               ))}
+            </div>
+
+            {/* Imagen TAFE NEWS */}
+            <div className="mb-10 rounded-2xl overflow-hidden shadow-xl">
+              <img
+                src="https://iglesiatafe.com/wp-content/uploads/2025/12/TAFE-NEWS-2048x1020.jpg"
+                alt="TAFE en movimiento"
+                className="w-full h-56 object-cover"
+              />
             </div>
 
             <div className="grid md:grid-cols-2 gap-8">
@@ -645,20 +672,46 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
                   ))}
                 </div>
 
-                <div className="mt-10 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-start gap-4">
-                  <a
-                    href="https://wa.me/573000000000"
-                    target="_blank" rel="noreferrer"
-                    className="inline-flex items-center gap-2 text-sm font-medium text-white/60 hover:text-white transition-colors"
-                  >
-                    <MessageCircle size={16} /> WhatsApp TAFE
-                  </a>
-                  <a
-                    href="tel:+573000000000"
-                    className="inline-flex items-center gap-2 text-sm font-medium text-white/60 hover:text-white transition-colors"
-                  >
-                    <Phone size={16} /> Llamar
-                  </a>
+                <div className="mt-10 pt-8 border-t border-white/10">
+                  <div className="text-white/30 text-[10px] font-bold uppercase tracking-widest mb-3">Contacto directo</div>
+                  <div className="flex flex-wrap gap-3">
+                    <a
+                      href="https://wa.me/573155042631"
+                      target="_blank" rel="noreferrer"
+                      className="inline-flex items-center gap-2 text-sm font-medium text-white/60 hover:text-white transition-colors"
+                    >
+                      <MessageCircle size={15} /> WhatsApp
+                    </a>
+                    <a
+                      href="tel:+573155042631"
+                      className="inline-flex items-center gap-2 text-sm font-medium text-white/60 hover:text-white transition-colors"
+                    >
+                      <Phone size={15} /> 315 5042631
+                    </a>
+                  </div>
+                  <div className="text-white/30 text-[10px] font-bold uppercase tracking-widest mt-5 mb-3">Síguenos</div>
+                  <div className="flex gap-3">
+                    <a
+                      href="https://www.youtube.com/@tabernaculoapostolicodefe"
+                      target="_blank" rel="noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/15 text-white/60 hover:text-white hover:border-white/30 text-xs font-bold transition-all"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                      </svg>
+                      YouTube
+                    </a>
+                    <a
+                      href="https://www.facebook.com/Tabernaculoapostolicodefe"
+                      target="_blank" rel="noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/15 text-white/60 hover:text-white hover:border-white/30 text-xs font-bold transition-all"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                      </svg>
+                      Facebook
+                    </a>
+                  </div>
                 </div>
               </div>
 
@@ -792,9 +845,25 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
               <p className="text-white/30 text-xs">
                 © {new Date().getFullYear()} Iglesia TAFE · Portal Ministerial ERP
               </p>
-              <p className="text-white/20 text-xs">
-                Desarrollado con ❤ para la comunidad apostólica de San Andrés
-              </p>
+              <div className="flex items-center gap-3">
+                <a href="https://www.youtube.com/@tabernaculoapostolicodefe" target="_blank" rel="noreferrer"
+                  className="text-white/30 hover:text-white transition-colors" title="YouTube TAFE">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                  </svg>
+                </a>
+                <a href="https://www.facebook.com/Tabernaculoapostolicodefe" target="_blank" rel="noreferrer"
+                  className="text-white/30 hover:text-white transition-colors" title="Facebook TAFE">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                </a>
+                <a href="https://wa.me/573155042631" target="_blank" rel="noreferrer"
+                  className="text-white/30 hover:text-white transition-colors" title="WhatsApp TAFE">
+                  <MessageCircle size={16} />
+                </a>
+                <span className="text-white/15 text-xs">iglesiatafe.com</span>
+              </div>
             </div>
           </div>
         </footer>
