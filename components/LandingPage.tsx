@@ -7,32 +7,6 @@ import {
   MapPin, Phone, MessageCircle, Check,
 } from 'lucide-react';
 
-// ─── Logo SVG ─────────────────────────────────────────────────────────────────
-const TafeLogo: React.FC<{ size?: number; white?: boolean }> = ({ size = 48, white = false }) => {
-  const navy = white ? '#FFFFFF' : '#004182';
-  const teal = '#49D1C5';
-  return (
-    <svg width={size} height={size} viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M40 85 A65 65 0 1 1 160 85" stroke={teal} strokeWidth="4" strokeLinecap="round" fill="none"/>
-      <path d="M50 70 Q100 58 150 70" stroke={white ? 'rgba(255,255,255,0.5)' : 'rgba(0,65,130,0.4)'} strokeWidth="2" fill="none"/>
-      <path d="M44 86 Q100 72 156 86" stroke={white ? 'rgba(255,255,255,0.5)' : 'rgba(0,65,130,0.4)'} strokeWidth="2" fill="none"/>
-      <path d="M100 22 Q115 55 112 88" stroke={white ? 'rgba(255,255,255,0.5)' : 'rgba(0,65,130,0.4)'} strokeWidth="2" fill="none"/>
-      <path d="M100 22 Q85 55 88 88" stroke={white ? 'rgba(255,255,255,0.5)' : 'rgba(0,65,130,0.4)'} strokeWidth="2" fill="none"/>
-      <ellipse cx="100" cy="72" rx="16" ry="10" fill={teal} transform="rotate(-15 100 72)"/>
-      <circle cx="115" cy="63" r="7" fill={teal}/>
-      <path d="M121 63 L128 61 L121 65 Z" fill={teal}/>
-      <path d="M96 68 Q72 48 60 58 Q78 62 88 75 Z" fill={teal}/>
-      <path d="M104 68 Q125 46 140 54 Q122 60 112 75 Z" fill={teal}/>
-      <path d="M86 78 Q78 95 70 88 Q82 88 90 82 Z" fill={teal}/>
-      <path d="M114 78 Q122 95 130 88 Q118 88 110 82 Z" fill={teal}/>
-      <line x1="100" y1="88" x2="100" y2="175" stroke={navy} strokeWidth="5" strokeLinecap="round"/>
-      <line x1="72" y1="120" x2="128" y2="120" stroke={navy} strokeWidth="4" strokeLinecap="round"/>
-      <text x="100" y="198" textAnchor="middle" fontFamily="Montserrat, sans-serif" fontWeight="700"
-        fontSize="24" letterSpacing="4" fill={navy}>TAFE</text>
-    </svg>
-  );
-};
-
 // ─── Axes data ────────────────────────────────────────────────────────────────
 const AXES = [
   { id: 'E1', name: 'Evangelismo',       desc: 'Alcanzando almas en cada barrio de la isla',         icon: Target,    color: '#e11d48' },
@@ -125,7 +99,7 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
           <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
             {/* Logo */}
             <button onClick={() => scrollTo('inicio')} className="flex items-center gap-2.5 group">
-              <TafeLogo size={36} white />
+              <img src="/logo-tafe-circle.png" alt="TAFE" className="w-9 h-9 object-contain" />
               <div className="leading-none">
                 <div className="text-white font-bold text-sm tracking-widest" style={{ fontFamily: 'Montserrat, sans-serif' }}>IGLESIA TAFE</div>
                 <div className="text-turqui text-[10px] tracking-wider">San Andrés, Colombia</div>
@@ -205,7 +179,7 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
 
           <div className="max-w-4xl mx-auto px-6 text-center relative">
             <div className="flex justify-center mb-8">
-              <TafeLogo size={100} white />
+              <img src="/logo-tafe-circle.png" alt="Tabernáculo Apostólico de Fe" className="w-28 h-28 object-contain" />
             </div>
 
             <div className="inline-flex items-center gap-2 bg-white/10 text-turqui text-xs font-bold px-4 py-2 rounded-full mb-6 tracking-wider uppercase">
@@ -222,8 +196,12 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
             </h1>
 
             <p className="text-white/70 text-lg md:text-xl mb-4 max-w-2xl mx-auto leading-relaxed">
-              Bienvenido al portal oficial de membresía y gestión ministerial de
-              Iglesia Tabernáculo Apostólico Fe Eterna.
+              Bienvenido al portal oficial de membresía y gestión ministerial de la
+              Iglesia Tabernáculo Apostólico de Fe.
+            </p>
+
+            <p className="text-turqui/80 text-sm italic mb-4 max-w-xl mx-auto">
+              "Este tabernáculo fue hecho para la gloria y honra de Dios."
             </p>
 
             <p className="text-white/50 text-base mb-10 max-w-xl mx-auto leading-relaxed">
@@ -256,7 +234,7 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
               <span className="text-xs font-bold tracking-widest uppercase text-turqui">Quiénes Somos</span>
               <h2 className="text-3xl md:text-4xl font-bold text-navy-tafe mt-2 mb-4"
                 style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                Tabernáculo Apostólico<br />Fe Eterna
+                Tabernáculo Apostólico<br />de Fe
               </h2>
               <p className="text-slate-500 max-w-2xl mx-auto text-base leading-relaxed">
                 Somos una iglesia apostólica en San Andrés, Colombia, fundamentada en los principios
@@ -314,7 +292,7 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
                 </button>
               </div>
               <div className="shrink-0">
-                <TafeLogo size={80} />
+                <img src="/logo-tafe.png" alt="Tabernáculo Apostólico de Fe" className="w-24 h-24 object-contain" />
               </div>
             </div>
           </div>
@@ -583,13 +561,16 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
           <div className="max-w-5xl mx-auto px-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
               <div className="flex items-center gap-3">
-                <TafeLogo size={40} white />
+                <img src="/logo-tafe-circle.png" alt="TAFE" className="w-10 h-10 object-contain" />
                 <div>
                   <div className="text-white font-bold text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                     IGLESIA TAFE
                   </div>
-                  <div className="text-white/40 text-xs">Tabernáculo Apostólico Fe Eterna</div>
+                  <div className="text-white/40 text-xs">Tabernáculo Apostólico de Fe</div>
                   <div className="text-white/40 text-xs">San Andrés, Colombia</div>
+                  <div className="text-turqui/40 text-[10px] italic mt-0.5">
+                    "Para la gloria y honra de Dios."
+                  </div>
                 </div>
               </div>
 
