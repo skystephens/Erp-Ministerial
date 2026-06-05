@@ -79,14 +79,14 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
       {/* ── Login modal ───────────────────────────────────────────────────────── */}
       {showLogin && (
         <div
-          className="fixed inset-0 z-50 overflow-y-auto flex items-start justify-center"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background: 'rgba(0,8,20,0.92)' }}
           onClick={(e) => { if (e.target === e.currentTarget) setShowLogin(false); }}
         >
-          <div className="relative w-full max-w-md mt-10 mx-4">
+          <div className="relative w-full max-w-4xl max-h-[92vh] overflow-y-auto rounded-2xl shadow-2xl">
             <button
               onClick={() => setShowLogin(false)}
-              className="absolute top-4 right-4 z-10 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-1.5 transition-all"
+              className="absolute top-4 right-4 z-50 text-white/70 hover:text-white bg-black/40 hover:bg-black/60 rounded-full p-1.5 transition-all"
             >
               <X size={18} />
             </button>
