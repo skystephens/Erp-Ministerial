@@ -20,7 +20,9 @@ import CRMSeguimiento from './components/CRMSeguimiento';
 import Evangelizados from './components/Evangelizados';
 import MinisterioDashboard from './components/MinisterioDashboard';
 import OrdenDelDia from './components/OrdenDelDia';
+import TAFEBienestar from './components/TAFEBienestar';
 import Login from './components/Login';
+import LandingPage from './components/LandingPage';
 import { AXIS_SCHEMA as INITIAL_SCHEMA } from './constants';
 import { airtableIsActive } from './services/airtableService';
 import { getStoredSession, logout as authLogout, sessionToUser } from './services/authService';
@@ -116,7 +118,7 @@ const App: React.FC = () => {
   // ── Autenticación ──────────────────────────────────────────────────────────
 
   if (!currentUser) {
-    return <Login onLogin={(user) => { setCurrentUser(user); }} />;
+    return <LandingPage onLogin={(user) => { setCurrentUser(user); }} />;
   }
 
   const handleLogout = () => {
@@ -196,6 +198,7 @@ const App: React.FC = () => {
       case 'projects':      return <ProjectManager user={currentUser} tasks={tasks} schema={axisSchema} onUpdateSchema={setAxisSchema} onAddTask={handleAddTask} />;
       case 'operations':    return <Operations role={currentUser.role} tasks={tasks} setTasks={setTasks} />;
       case 'orden_del_dia': return <OrdenDelDia role={currentUser.role} />;
+      case 'bienestar':     return <TAFEBienestar role={currentUser.role} />;
       case 'timebank':      return <TimeBank role={currentUser.role} user={currentUser} />;
       case 'calendar':      return <CalendarView role={currentUser.role} events={calendarEvents} setEvents={setCalendarEvents} />;
       case 'asistencia':    return (

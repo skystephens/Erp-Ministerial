@@ -20,6 +20,7 @@ import {
   UserCheck,
   LayoutGrid,
   ListChecks,
+  Heart,
 } from 'lucide-react';
 import { ApostolicAxis, UserRole } from './types';
 
@@ -115,6 +116,14 @@ export const NAV_SECTIONS: NavSection[] = [
       { id: 'evangelizados',   label: 'Evangelizados',    icon: <HeartHandshake size={18} />, roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
       { id: 'crm_seguimiento', label: 'CRM Seguimiento',  icon: <UserCheck size={18} />,    roles: [UserRole.SUPER_ADMIN, UserRole.SUPERVISORA, UserRole.LIDER_MINISTERIO] },
       { id: 'pastoral_inbox',  label: 'Buzón Pastoral',   icon: <Inbox size={18} /> },
+    ],
+  },
+  {
+    id: 'sec_bienestar',
+    label: 'Bienestar Comunitario',
+    icon: <Heart size={16} />,
+    items: [
+      { id: 'bienestar', label: 'TAFE Bienestar', icon: <Heart size={18} /> },
     ],
   },
   {

@@ -642,6 +642,67 @@ export const upsertConfigRecord = async (
   }
 };
 
+// ─── [BIE] Casos_Bienestar ───────────────────────────────────────────────────
+// Tabla: tbl6RCKtjql67N8XL
+export type CasoBienestarFields = {
+  Caso_ID: string;
+  Nombre_Solicitante: string;
+  Telefono?: string;
+  Barrio?: string;
+  Tipo_Caso?: string;
+  Descripcion?: string;
+  Urgencia?: string;
+  Tipo_Ayuda_Esperada?: string;
+  Monto_Solicitado?: number;
+  Eje_Solicitante?: string;
+  Dependientes?: string;
+  Estado?: string;
+  Progreso?: number;
+  Fecha_Solicitud?: string;
+  Notas_Diaconia?: string;
+};
+
+const CASOS_TABLE = '[BIE] Casos_Bienestar';
+
+export const getCasosBienestar = (filtro?: string) =>
+  fetchTable<CasoBienestarFields>(CASOS_TABLE, filtro);
+
+export const getCasosByEstado = (estado: string) =>
+  fetchTable<CasoBienestarFields>(CASOS_TABLE, `{Estado}="${estado}"`);
+
+export const createCasoBienestar = (fields: CasoBienestarFields) =>
+  createRecord<CasoBienestarFields>(CASOS_TABLE, fields);
+
+export const updateCasoBienestar = (recordId: string, fields: Partial<CasoBienestarFields>) =>
+  updateRecord<CasoBienestarFields>(CASOS_TABLE, recordId, fields);
+
+// ─── [FIN] Donaciones_Bienestar ──────────────────────────────────────────────
+// Tabla: tblbQJjmYG09kkKLq
+export type DonacionBienestarFields = {
+  Donacion_ID: string;
+  Nombre_Donante?: string;
+  Monto_COP?: number;
+  Tipo_Donacion?: string;
+  Metodo_Pago?: string;
+  Eje_ID_Donante?: string;
+  Caso_ID_Ref?: string;
+  Fecha_Donacion?: string;
+  Notas?: string;
+  Estado_Verificacion?: string;
+  Anonima?: boolean;
+};
+
+const DONACIONES_TABLE = '[FIN] Donaciones_Bienestar';
+
+export const getDonacionesBienestar = () =>
+  fetchTable<DonacionBienestarFields>(DONACIONES_TABLE);
+
+export const createDonacionBienestar = (fields: DonacionBienestarFields) =>
+  createRecord<DonacionBienestarFields>(DONACIONES_TABLE, fields);
+
+export const verificarDonacion = (recordId: string) =>
+  updateRecord<DonacionBienestarFields>(DONACIONES_TABLE, recordId, { Estado_Verificacion: 'Verificado' });
+
 // --- Sync híbrido: crea tarea y registra aporte en Banco_Tiempo ---
 export const syncTareaConBanco = async (
   tarea: TareaFields,
