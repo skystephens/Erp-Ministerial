@@ -318,16 +318,16 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
             </div>
 
             {/* Galería de la comunidad */}
-            <div className="grid grid-cols-3 gap-4 mb-12">
+            <div className="space-y-4 mb-12">
               <img
                 src="https://iglesiatafe.com/wp-content/uploads/2025/05/WhatsApp-Image-2025-05-25-at-8.02.05-AM.jpeg"
                 alt="Celebración 36 aniversario TAFE"
-                className="col-span-2 rounded-2xl w-full h-52 object-cover shadow-md"
+                className="rounded-2xl w-full shadow-md"
               />
               <img
                 src="https://iglesiatafe.com/wp-content/uploads/2024/08/servicio-dominical-princip.jpg"
                 alt="Servicio dominical TAFE"
-                className="rounded-2xl w-full h-52 object-cover shadow-md"
+                className="rounded-2xl w-full shadow-md"
               />
             </div>
 
@@ -393,14 +393,12 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
               ))}
             </div>
 
-            {/* Imagen TAFE NEWS */}
-            <div className="mb-10 rounded-2xl overflow-hidden shadow-xl">
-              <img
-                src="https://iglesiatafe.com/wp-content/uploads/2025/12/TAFE-NEWS-2048x1020.jpg"
-                alt="TAFE en movimiento"
-                className="w-full h-56 object-cover"
-              />
-            </div>
+            {/* Imagen TAFE NEWS — proporción original 2048×1020 (≈2:1) */}
+            <img
+              src="https://iglesiatafe.com/wp-content/uploads/2025/12/TAFE-NEWS-2048x1020.jpg"
+              alt="TAFE en movimiento"
+              className="w-full rounded-2xl shadow-xl mb-10"
+            />
 
             <div className="grid md:grid-cols-2 gap-8">
               <div className="p-8 rounded-2xl" style={{ background: 'rgba(255,255,255,0.07)' }}>
