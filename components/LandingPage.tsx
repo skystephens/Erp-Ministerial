@@ -33,11 +33,13 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
   const quienesRef     = useRef<HTMLElement>(null);
   const evangelismoRef = useRef<HTMLElement>(null);
   const liderazgoRef   = useRef<HTMLElement>(null);
+  const bienestarRef   = useRef<HTMLElement>(null);
   const conectateRef   = useRef<HTMLElement>(null);
 
   const refsMap: Record<string, React.RefObject<HTMLElement | null>> = {
     inicio: inicioRef, quienes: quienesRef,
-    evangelismo: evangelismoRef, liderazgo: liderazgoRef, conectate: conectateRef,
+    evangelismo: evangelismoRef, liderazgo: liderazgoRef,
+    bienestar: bienestarRef, conectate: conectateRef,
   };
 
   const scrollTo = (key: string) => {
@@ -68,6 +70,7 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
     { key: 'quienes',     label: 'Quiénes Somos' },
     { key: 'evangelismo', label: 'Evangelismo' },
     { key: 'liderazgo',   label: 'Liderazgo' },
+    { key: 'bienestar',   label: 'Bienestar' },
     { key: 'conectate',   label: 'Conéctate' },
   ];
 
@@ -230,43 +233,66 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
         {/* ── Quiénes Somos ───────────────────────────────────────────────────── */}
         <section ref={quienesRef} id="quienes" className="py-24 bg-white">
           <div className="max-w-5xl mx-auto px-6">
-            <div className="text-center mb-16">
+
+            <div className="text-center mb-14">
               <span className="text-xs font-bold tracking-widest uppercase text-turqui">Quiénes Somos</span>
               <h2 className="text-3xl md:text-4xl font-bold text-navy-tafe mt-2 mb-4"
                 style={{ fontFamily: 'Montserrat, sans-serif' }}>
                 Tabernáculo Apostólico<br />de Fe
               </h2>
               <p className="text-slate-500 max-w-2xl mx-auto text-base leading-relaxed">
-                Somos una iglesia apostólica en San Andrés, Colombia, fundamentada en los principios
-                del evangelio de Jesucristo. Nuestra visión es alcanzar, discipular y movilizar a cada
-                creyente hacia un propósito claro dentro del cuerpo de Cristo.
+                Somos una iglesia apostólica en San Andrés, Colombia. Edificamos familias como núcleo
+                central de la sociedad, a través de la evangelización, el discipulado y el servicio integral a la comunidad.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8 mb-16">
+            {/* Misión + Visión */}
+            <div className="grid md:grid-cols-2 gap-6 mb-12">
+              <div className="p-8 rounded-2xl text-white" style={{ background: 'linear-gradient(135deg, #004182 0%, #002a55 100%)' }}>
+                <div className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: '#49D1C5' }}>
+                  Nuestra Misión
+                </div>
+                <p className="text-white text-base leading-relaxed" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                  "Alcanzar, fortalecer y transformar al ser desde una estructura espiritual e integral,
+                  por medio de la evangelización y el discipulado."
+                </p>
+              </div>
+              <div className="p-8 rounded-2xl border border-navy-tafe/10" style={{ background: '#f0f6ff' }}>
+                <div className="text-xs font-bold tracking-widest uppercase mb-3 text-navy-tafe/60">
+                  Nuestra Visión
+                </div>
+                <p className="text-navy-tafe text-base leading-relaxed font-medium" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                  "TAFE será una iglesia Cristo-céntrica que restaura familias y establece el reino
+                  de Dios en todas las naciones."
+                </p>
+              </div>
+            </div>
+
+            {/* 3 pilares */}
+            <div className="grid md:grid-cols-3 gap-6 mb-12">
               {[
                 {
                   icon: '✝',
                   title: 'Fe Apostólica',
-                  body: 'Fundamentados en los principios del evangelio de Jesús. Adoramos, creemos y vivimos una fe que transforma vidas en la isla.',
+                  body: 'Fundamentados en los principios del evangelio de Jesucristo. Adoramos, creemos y vivimos una fe que transforma familias en la isla.',
                   accent: '#004182',
                 },
                 {
                   icon: '🤝',
-                  title: 'Comunidad Activa',
-                  body: 'Una red de creyentes comprometidos, organizados en 7 ejes ministeriales que trabajan cada semana por el bien de San Andrés.',
+                  title: 'Comunidad Organizada',
+                  body: 'Una red de creyentes comprometidos, estructurados en 7 ejes ministeriales que trabajan cada semana por el bien de San Andrés.',
                   accent: '#49D1C5',
                 },
                 {
-                  icon: '💛',
+                  icon: '🌱',
                   title: 'Servicio Integral',
-                  body: 'Desde evangelismo hasta liderazgo y bienestar comunitario, servimos con estructura, visión y corazón apostólico.',
-                  accent: '#f59e0b',
+                  body: 'Desde evangelismo hasta bienestar comunitario: alcanzamos, formamos, mantenemos y nutrimos las almas con un propósito claro.',
+                  accent: '#059669',
                 },
               ].map((c) => (
-                <div key={c.title} className="p-8 rounded-2xl border border-slate-100 hover:border-turqui/30 hover:shadow-lg transition-all group">
+                <div key={c.title} className="p-7 rounded-2xl border border-slate-100 hover:border-turqui/30 hover:shadow-md transition-all">
                   <div className="text-3xl mb-4">{c.icon}</div>
-                  <h3 className="text-lg font-bold mb-2" style={{ color: c.accent, fontFamily: 'Montserrat, sans-serif' }}>
+                  <h3 className="text-base font-bold mb-2" style={{ color: c.accent, fontFamily: 'Montserrat, sans-serif' }}>
                     {c.title}
                   </h3>
                   <p className="text-slate-500 text-sm leading-relaxed">{c.body}</p>
@@ -274,21 +300,35 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
               ))}
             </div>
 
+            {/* Valores */}
+            <div className="text-center mb-12">
+              <div className="text-xs font-bold tracking-widest uppercase text-turqui mb-4">Nuestros Valores</div>
+              <div className="flex flex-wrap justify-center gap-2">
+                {['Servicio', 'Integridad', 'Aprendizaje', 'Lealtad', 'Perseverancia', 'Responsabilidad', 'Sabiduría', 'Respeto'].map(v => (
+                  <span key={v} className="px-4 py-2 rounded-full text-sm font-medium border text-navy-tafe/70"
+                    style={{ borderColor: '#004182', background: '#f0f6ff' }}>
+                    {v}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* ERP CTA */}
             <div className="bg-slate-50 rounded-2xl p-8 flex flex-col md:flex-row items-center gap-8">
               <div className="flex-1">
                 <h3 className="text-xl font-bold text-navy-tafe mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                  El ERP Ministerial de TAFE
+                  El Portal Ministerial de TAFE
                 </h3>
                 <p className="text-slate-500 text-sm leading-relaxed mb-4">
-                  Este portal es el sistema digital de TAFE: gestión de membresía, orden del día,
-                  evangelismo, discipulado, seguimiento pastoral y mucho más. Si ya eres parte de la
-                  comunidad, aquí tienes tu herramienta de trabajo.
+                  Este sistema digital centraliza la vida de la iglesia: membresía, asistencia, orden del día,
+                  evangelismo, discipulado, seguimiento pastoral y bienestar comunitario. Si ya eres parte,
+                  aquí tienes tu herramienta de trabajo.
                 </p>
                 <button
                   onClick={() => setShowLogin(true)}
                   className="inline-flex items-center gap-2 text-sm font-bold text-navy-tafe hover:text-turqui transition-colors"
                 >
-                  Iniciar sesión <ChevronRight size={14} />
+                  Ingresar al portal <ChevronRight size={14} />
                 </button>
               </div>
               <div className="shrink-0">
@@ -406,6 +446,161 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
                   ¿En cuál eje sirves tú?
                 </span>
                 <ArrowRight size={20} style={{ color: '#49D1C5' }} />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── TAFE Bienestar ──────────────────────────────────────────────────── */}
+        <section ref={bienestarRef} id="bienestar" className="py-24" style={{ background: '#f0faf7' }}>
+          <div className="max-w-5xl mx-auto px-6">
+
+            <div className="text-center mb-14">
+              <span className="text-xs font-bold tracking-widest uppercase" style={{ color: '#059669' }}>
+                Bienestar Comunitario
+              </span>
+              <h2 className="text-3xl md:text-4xl font-bold mt-2 mb-4"
+                style={{ fontFamily: 'Montserrat, sans-serif', color: '#064e3b' }}>
+                ¿Cómo podemos ayudarte?
+              </h2>
+              <p className="text-slate-500 max-w-2xl mx-auto text-base leading-relaxed">
+                La comunidad TAFE ofrece programas de apoyo integral a sus miembros y familias.
+                En TAFE nadie enfrenta una crisis solo — hay una red organizada lista para acompañarte.
+              </p>
+            </div>
+
+            {/* 6 servicios */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
+              {[
+                {
+                  title: 'Apoyo en salud',
+                  body: 'Coordinación de atención médica, medicamentos, transporte a citas y acompañamiento durante hospitalizaciones.',
+                  tag: 'Activo', tagColor: '#059669',
+                  border: '#34d399',
+                },
+                {
+                  title: 'Calamidad doméstica',
+                  body: 'Asistencia inmediata ante emergencias del hogar: daños, pérdida de bienes o situaciones que afecten el sustento familiar.',
+                  tag: 'Activo', tagColor: '#b45309',
+                  border: '#f59e0b',
+                },
+                {
+                  title: 'Mercado y alimentación',
+                  body: 'Red solidaria de donaciones en especie: alimentos, productos de primera necesidad y útiles escolares para hijos.',
+                  tag: 'En crecimiento', tagColor: '#dc2626',
+                  border: '#f87171',
+                },
+                {
+                  title: 'Brigadas comunitarias',
+                  body: 'Jornadas de salud preventiva con miembros profesionales: toma de presión, glucometría, orientación médica gratuita.',
+                  tag: 'Próxima: Jul 2025', tagColor: '#7c3aed',
+                  border: '#a78bfa',
+                },
+                {
+                  title: 'Fondo de emergencia',
+                  body: 'Contribuciones voluntarias de la congregación para apoyar a miembros en situación de crisis económica comprobada.',
+                  tag: 'Activo', tagColor: '#0369a1',
+                  border: '#38bdf8',
+                },
+                {
+                  title: 'Banco de tiempo',
+                  body: 'Intercambio de habilidades y servicios entre miembros: transporte, cuidado de niños, reparaciones, trámites.',
+                  tag: 'Beta', tagColor: '#d97706',
+                  border: '#fbbf24',
+                },
+              ].map((s) => (
+                <div key={s.title} className="bg-white rounded-2xl p-6 shadow-sm border-t-2 hover:shadow-md transition-all"
+                  style={{ borderTopColor: s.border }}>
+                  <h3 className="font-bold text-slate-800 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                    {s.title}
+                  </h3>
+                  <p className="text-slate-500 text-sm leading-relaxed mb-4">{s.body}</p>
+                  <span className="inline-block px-3 py-1 rounded-full text-xs font-bold"
+                    style={{ background: s.tagColor + '18', color: s.tagColor }}>
+                    {s.tag}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Solicitar apoyo + Contribuir */}
+            <div className="grid md:grid-cols-2 gap-6 mb-8">
+              <div className="bg-white rounded-2xl p-8 border border-emerald-100 shadow-sm">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+                  style={{ background: '#d1fae5' }}>
+                  <Heart size={20} style={{ color: '#059669' }} />
+                </div>
+                <h3 className="text-lg font-bold mb-2" style={{ fontFamily: 'Montserrat, sans-serif', color: '#064e3b' }}>
+                  Solicitar apoyo
+                </h3>
+                <p className="text-slate-500 text-sm leading-relaxed mb-5">
+                  Si tú o tu familia atraviesan una situación difícil, la Diaconía TAFE está aquí
+                  para acompañarte con discreción, amor y recursos concretos. El proceso es confidencial.
+                </p>
+                <ul className="space-y-2 mb-6">
+                  {['Rellenas el formulario de solicitud', 'Un diácono te contacta en 24–48 horas', 'Se asigna un plan de acompañamiento personalizado'].map(step => (
+                    <li key={step} className="flex items-start gap-2 text-sm text-slate-600">
+                      <Check size={14} className="mt-0.5 shrink-0" style={{ color: '#059669' }} />
+                      {step}
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => setShowLogin(true)}
+                  className="inline-flex items-center gap-2 text-sm font-bold hover:opacity-80 transition-colors"
+                  style={{ color: '#059669' }}
+                >
+                  Acceder al módulo <ChevronRight size={14} />
+                </button>
+              </div>
+
+              <div className="rounded-2xl p-8 text-white" style={{ background: 'linear-gradient(135deg, #065f46 0%, #047857 100%)' }}>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+                  style={{ background: 'rgba(255,255,255,0.15)' }}>
+                  <Users size={20} className="text-white" />
+                </div>
+                <h3 className="text-lg font-bold mb-2 text-white" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                  Contribuye al fondo
+                </h3>
+                <p className="text-white/70 text-sm leading-relaxed mb-5">
+                  Tu aporte — en efectivo, Nequi, especie o tiempo — fortalece la red de apoyo
+                  de nuestra congregación. Cada contribución va directo a familias que lo necesitan.
+                </p>
+                <div className="grid grid-cols-2 gap-2 mb-6">
+                  {['Dinero en efectivo', 'Nequi / digital', 'En especie', 'Servicio / tiempo'].map(tipo => (
+                    <div key={tipo} className="px-3 py-2 rounded-lg text-xs font-medium text-white/80 text-center"
+                      style={{ background: 'rgba(255,255,255,0.12)' }}>
+                      {tipo}
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setShowLogin(true)}
+                  className="inline-flex items-center gap-2 text-sm font-bold text-white/90 hover:text-white transition-colors"
+                >
+                  Registrar contribución <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+
+            {/* Ministerios involucrados */}
+            <div className="bg-white rounded-2xl p-6 border border-emerald-50">
+              <div className="text-xs font-bold tracking-widest uppercase mb-4" style={{ color: '#059669' }}>
+                Ministerios que sostienen TAFE Bienestar
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {[
+                  { name: 'Diaconía & Misericordia (E4)', color: '#15803d' },
+                  { name: 'Pastoral & Consolidación (E3)', color: '#0369a1' },
+                  { name: 'Brigadas de Salud', color: '#7c3aed' },
+                  { name: 'Administración (E6)', color: '#374151' },
+                  { name: 'Oración e Intercesión (E7)', color: '#9f1239' },
+                ].map(m => (
+                  <span key={m.name} className="px-4 py-2 rounded-full text-xs font-bold border"
+                    style={{ borderColor: m.color + '40', color: m.color, background: m.color + '0d' }}>
+                    {m.name}
+                  </span>
+                ))}
               </div>
             </div>
           </div>
