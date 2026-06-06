@@ -102,13 +102,31 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onApprove }) =
 
   return (
     <div className="space-y-8 animate-fadeIn">
+
+      {/* Banner de alerta cuando hay pendientes */}
+      {prospectos.length > 0 && activeAdminTab === 'registros' && !loadingProspectos && (
+        <div className="flex items-center gap-4 p-5 bg-amber-50 border border-amber-200 rounded-2xl">
+          <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+            <UserPlus size={20} className="text-amber-600" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-amber-800">
+              {prospectos.length} persona{prospectos.length > 1 ? 's' : ''} esperando asignación de rol y ministerio
+            </p>
+            <p className="text-xs text-amber-600 mt-0.5">
+              Se registraron vía Firebase Auth · Sin ministerio ni eje asignados aún
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Selector de Panel Admin */}
       <div className="flex flex-wrap gap-4 p-2 bg-slate-100 rounded-[2rem] w-fit border border-slate-200 shadow-inner">
         <button onClick={() => setActiveAdminTab('registros')} className={`px-8 py-3 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 ${activeAdminTab === 'registros' ? 'bg-white shadow-md text-navy-tafe' : 'text-slate-400 hover:text-slate-600'}`}>
           <UserPlus size={16} /> Nuevos Registros {prospectos.length > 0 && <span className="bg-red-500 text-white min-w-[1.1rem] h-[1.1rem] px-1 rounded-full text-[9px] flex items-center justify-center font-bold">{prospectos.length}</span>}
         </button>
         <button onClick={() => setActiveAdminTab('approvals')} className={`px-8 py-3 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 ${activeAdminTab === 'approvals' ? 'bg-white shadow-md text-navy-tafe' : 'text-slate-400 hover:text-slate-600'}`}>
-          <UserCheck size={16} /> Aprobaciones {pendingUsers.length > 0 && <span className="bg-red-500 text-white w-2 h-2 rounded-full animate-pulse"></span>}
+          <UserCheck size={16} /> Cola Local {pendingUsers.length > 0 && <span className="bg-red-500 text-white w-2 h-2 rounded-full animate-pulse"></span>}
         </button>
       </div>
 
@@ -164,27 +182,44 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onApprove }) =
             ) : prospectos.length === 0 ? (
               <div className="py-20 text-center text-slate-400 italic">No hay registros nuevos pendientes.</div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {prospectos.map(p => (
-                  <div key={p.recordId} className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 hover:border-turqui/30 transition-all">
-                    <h4 className="font-bold text-slate-800">{p.nombre}</h4>
-                    <p className="text-[10px] text-slate-400 mb-1">{p.email}</p>
-                    <p className="text-[10px] text-slate-500 mb-4">
-                      Ministerio: <span className="font-bold">{p.ministerio || '—'}</span> · Eje: <span className="font-bold">{p.eje || '—'}</span>
-                    </p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setApproving(p)}
-                        className="flex-1 py-2.5 bg-navy-tafe text-white font-bold text-[10px] rounded-xl flex items-center justify-center gap-1.5 hover:bg-navy-tafe/90 transition-colors"
-                      >
-                        <Check size={12} /> Aprobar
-                      </button>
-                      <button
-                        onClick={() => setConfirmReject(p)}
-                        className="flex-1 py-2.5 bg-red-50 text-red-500 font-bold text-[10px] rounded-xl flex items-center justify-center gap-1.5 border border-red-100 hover:bg-red-100 transition-colors"
-                      >
-                        <X size={12} /> Rechazar
-                      </button>
+                  <div key={p.recordId} className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:border-turqui/40 hover:shadow-md transition-all">
+                    {/* Header de la tarjeta */}
+                    <div className="flex items-center gap-3 px-6 py-4 bg-slate-50 border-b border-slate-100">
+                      <div className="w-10 h-10 rounded-xl bg-navy-tafe/10 flex items-center justify-center shrink-0">
+                        <span className="text-navy-tafe font-bold text-base">
+                          {p.nombre.trim().charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="font-bold text-slate-800 text-sm truncate">{p.nombre}</h4>
+                        <p className="text-[11px] text-slate-400 truncate">{p.email}</p>
+                      </div>
+                      <span className="ml-auto shrink-0 px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-100 text-amber-700">
+                        Sin rol
+                      </span>
+                    </div>
+                    {/* Info y acciones */}
+                    <div className="px-6 py-4 space-y-3">
+                      <div className="flex items-center gap-4 text-[10px] text-slate-500">
+                        <span>Ministerio: <strong className="text-slate-700">{p.ministerio || 'Sin asignar'}</strong></span>
+                        <span>Eje: <strong className="text-slate-700">{p.eje || 'Sin asignar'}</strong></span>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setApproving(p)}
+                          className="flex-[2] py-2.5 bg-navy-tafe text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 hover:bg-navy-tafe/90 transition-colors"
+                        >
+                          <Check size={13} /> Asignar rol y ministerio
+                        </button>
+                        <button
+                          onClick={() => setConfirmReject(p)}
+                          className="flex-1 py-2.5 bg-red-50 text-red-400 font-bold text-xs rounded-xl flex items-center justify-center gap-1 border border-red-100 hover:bg-red-100 transition-colors"
+                        >
+                          <X size={13} /> Eliminar
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -198,20 +233,40 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onApprove }) =
       {approving && (
         <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-slideUp">
-            <div className="bg-navy-tafe p-10 text-white">
-              <h3 className="text-xl font-montserrat font-bold">Aprobar Prospecto</h3>
+            <div className="bg-navy-tafe p-8 text-white">
+              <h3 className="text-xl font-montserrat font-bold">Asignar Rol y Ministerio</h3>
               <p className="text-white/60 text-xs mt-1">{approving.nombre} · {approving.email}</p>
             </div>
-            <div className="p-10 space-y-4">
+            <div className="p-8 space-y-5">
+              {/* Selector de rol como botones visuales */}
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Rol</label>
-                <select
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-xs"
-                  value={approveForm.rol}
-                  onChange={e => setApproveForm({ ...approveForm, rol: e.target.value })}
-                >
-                  {ROLES_ASIGNABLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
-                </select>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 block">Rol a asignar</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {ROLES_ASIGNABLES.map(r => (
+                    <button
+                      key={r.value}
+                      type="button"
+                      onClick={() => setApproveForm({ ...approveForm, rol: r.value })}
+                      className={`py-3 px-2 rounded-xl text-xs font-bold border-2 transition-all text-center ${
+                        approveForm.rol === r.value
+                          ? 'border-navy-tafe bg-navy-tafe text-white'
+                          : 'border-slate-200 text-slate-500 hover:border-navy-tafe/40'
+                      }`}
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+                {approveForm.rol === 'SUPERVISORA' && (
+                  <p className="text-[10px] text-amber-600 mt-2 bg-amber-50 px-3 py-1.5 rounded-lg">
+                    Supervisora de Eje — acceso a reportes y gestión de su eje apostólico
+                  </p>
+                )}
+                {approveForm.rol === 'LIDER_MINISTERIO' && (
+                  <p className="text-[10px] text-blue-600 mt-2 bg-blue-50 px-3 py-1.5 rounded-lg">
+                    Líder de Ministerio — gestiona tareas, asistencia y equipo de su ministerio
+                  </p>
+                )}
               </div>
               <div>
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Ministerio</label>
@@ -233,15 +288,15 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onApprove }) =
                   {EJES_OPTIONS.map(ej => <option key={ej.value} value={ej.value}>{ej.label}</option>)}
                 </select>
               </div>
-              <div className="flex gap-4 pt-4">
-                <button onClick={() => setApproving(null)} className="flex-1 py-4 text-slate-400 font-bold rounded-2xl border border-slate-200">Cancelar</button>
+              <div className="flex gap-3 pt-2">
+                <button onClick={() => setApproving(null)} className="flex-1 py-4 text-slate-400 font-bold rounded-2xl border border-slate-200 hover:bg-slate-50">Cancelar</button>
                 <button
                   onClick={handleApprove}
                   disabled={savingApproval}
                   className="flex-[2] py-4 bg-turqui text-white font-bold rounded-2xl flex items-center justify-center gap-2 disabled:opacity-50 transition-opacity"
                 >
                   {savingApproval ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
-                  {savingApproval ? 'Guardando...' : 'Confirmar Aprobación'}
+                  {savingApproval ? 'Guardando...' : `Confirmar como ${ROLES_ASIGNABLES.find(r=>r.value===approveForm.rol)?.label}`}
                 </button>
               </div>
             </div>

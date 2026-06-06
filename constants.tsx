@@ -132,8 +132,8 @@ export const NAV_SECTIONS: NavSection[] = [
     icon: <ShieldCheck size={16} />,
     roles: [UserRole.SUPER_ADMIN],
     items: [
-      { id: 'admin_mgmt', label: 'Gestión / Capas',    icon: <ShieldCheck size={18} /> },
-      { id: 'projects',   label: 'Plan TAFE — 7 Ejes', icon: <Layers size={18} />, roles: [UserRole.SUPER_ADMIN] },
+      { id: 'admin_mgmt', label: 'Nuevos Miembros · Roles', icon: <UserCheck size={18} /> },
+      { id: 'projects',   label: 'Plan TAFE — 7 Ejes',      icon: <Layers size={18} />, roles: [UserRole.SUPER_ADMIN] },
     ],
   },
 ];
