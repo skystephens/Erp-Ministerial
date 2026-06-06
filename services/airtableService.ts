@@ -572,9 +572,9 @@ export async function getProspectos(): Promise<ProspectoAirtable[]> {
   try {
     // Usuarios registrados por Firebase que aún no tienen Ministerio Y Eje asignados (pendientes de aprobación)
     const formula = encodeURIComponent(
-      `AND({Firebase_UID}!="", OR({Ministerio_ID}="", {Eje_ID}=""))`
+      `AND(NOT(BLANK({Firebase_UID})), OR(BLANK({Ministerio_ID}), BLANK({Eje_ID})))`
     );
-    const res  = await fetch(`${BASE_URL}/${BASE_ID}/${MIEMBROS_TABLE}?filterByFormula=${formula}&sort[0][field]=createdTime&sort[0][direction]=desc`, { headers: getHeaders() });
+    const res  = await fetch(`${BASE_URL}/${BASE_ID}/${MIEMBROS_TABLE}?filterByFormula=${formula}`, { headers: getHeaders() });
     const data = await res.json();
     return ((data.records ?? []) as AirtableRecord<Record<string,string>>[]).map(r => ({
       recordId:   r.id,

@@ -26,13 +26,13 @@ const ROLES_ASIGNABLES = [
 ];
 
 const EJES_OPTIONS = [
-  { value: 'E1_EVANGELISMO',    label: 'E1 · Evangelismo y Células' },
-  { value: 'E2_INTERCESION',    label: 'E2 · Intercesión y Formación' },
-  { value: 'E3_CONSOLIDACION',  label: 'E3 · Consolidación y Anfitriones' },
-  { value: 'E4_INFANCIA_DANZA', label: 'E4 · Danza y Escuela Infantil AMO' },
-  { value: 'E5_ALABANZA_AV',    label: 'E5 · Medios y Alabanza' },
-  { value: 'E6_SOCIAL_CUIDADO', label: 'E6 · Atención Social y Pastoral' },
-  { value: 'E7_JOVENES',        label: 'E7 · Adolescentes y Adultos Jóvenes' },
+  { value: 'E1', label: 'E1 · Evangelismo y Células' },
+  { value: 'E2', label: 'E2 · Intercesión y Formación' },
+  { value: 'E3', label: 'E3 · Consolidación y Anfitriones' },
+  { value: 'E4', label: 'E4 · Danza y Escuela Infantil AMO' },
+  { value: 'E5', label: 'E5 · Medios y Alabanza' },
+  { value: 'E6', label: 'E6 · Atención Social y Pastoral' },
+  { value: 'E7', label: 'E7 · Adolescentes y Adultos Jóvenes' },
 ];
 
 const AdminManagement: React.FC<AdminManagementProps> = ({ users, onApprove }) => {
@@ -43,7 +43,7 @@ const AdminManagement: React.FC<AdminManagementProps> = ({ users, onApprove }) =
   const [prospectos,        setProspectos]        = useState<ProspectoAirtable[]>([]);
   const [loadingProspectos, setLoadingProspectos] = useState(false);
   const [approving,         setApproving]         = useState<ProspectoAirtable | null>(null);
-  const [approveForm,       setApproveForm]       = useState({ rol: 'MIEMBRO', ministerio: MINISTRIES[0] ?? '', eje: 'E5_ALABANZA_AV' });
+  const [approveForm,       setApproveForm]       = useState({ rol: 'MIEMBRO', ministerio: MINISTRIES[0] ?? '', eje: 'E5' });
   const [savingApproval,    setSavingApproval]    = useState(false);
   const [confirmReject,     setConfirmReject]      = useState<ProspectoAirtable | null>(null);
   const [actionMsg,         setActionMsg]         = useState('');

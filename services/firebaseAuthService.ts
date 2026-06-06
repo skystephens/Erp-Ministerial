@@ -128,9 +128,20 @@ export async function firebaseLogin(email: string, password: string): Promise<Au
   if (!records.length) {
     records = await fetchMiembros(`{Email}="${email}"`);
     if (records.length) {
-      // Vincular UID al registro encontrado por email
       await patchMiembro(records[0].id, { Firebase_UID: user.uid });
     }
+  }
+
+  // Si no existe registro en Airtable, crear uno para que el admin lo asigne
+  if (!records.length) {
+    const created = await createMiembro({
+      ID_Miembro:      `MBR_${Date.now()}`,
+      Nombre_Completo: user.displayName ?? email,
+      Email:           email,
+      Firebase_UID:    user.uid,
+      Rol:             'MIEMBRO',
+    });
+    records = created ? [created] : [];
   }
 
   const session = buildSession(user, records[0]);
