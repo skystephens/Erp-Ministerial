@@ -139,7 +139,6 @@ export async function firebaseLogin(email: string, password: string): Promise<Au
       Nombre_Completo: user.displayName ?? email,
       Email:           email,
       Firebase_UID:    user.uid,
-      Rol:             'MIEMBRO',
     });
     records = created ? [created] : [];
   }
@@ -193,13 +192,12 @@ export async function firebaseRegister(
       await patchMiembro(byEmail[0].id, { Firebase_UID: user.uid });
       record = byEmail[0];
     } else {
-      // Crear como MIEMBRO (acceso inmediato, admin asigna ministerio después)
+      // Crear sin rol — admin asigna ministerio y rol desde panel Nuevos Miembros
       const created = await createMiembro({
         ID_Miembro:      `MBR_${Date.now()}`,
         Nombre_Completo: displayName,
         Email:           email,
         Firebase_UID:    user.uid,
-        Rol:             'MIEMBRO',
       });
       record    = created ?? undefined;
       isPending = true;
@@ -227,13 +225,12 @@ export async function googleLogin(): Promise<{ session: AuthSession; isPending: 
   }
 
   if (!records.length) {
-    // Crear como MIEMBRO (acceso inmediato, admin asigna ministerio después)
+    // Crear sin rol — admin asigna ministerio y rol desde panel Nuevos Miembros
     const created = await createMiembro({
       ID_Miembro:      `MBR_${Date.now()}`,
       Nombre_Completo: user.displayName ?? user.email ?? 'Usuario Google',
       Email:           user.email ?? '',
       Firebase_UID:    user.uid,
-      Rol:             'MIEMBRO',
     });
     records   = created ? [created] : [];
     isPending = true;
