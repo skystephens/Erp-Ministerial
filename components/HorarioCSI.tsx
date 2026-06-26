@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   ChevronLeft, ChevronRight, Edit2, Save, X,
   Loader, AlertCircle, Clock, Users, CalendarDays, WifiOff,
+  UserPlus, Trash2, Settings,
 } from 'lucide-react';
 import {
   getHorarioCSI, updateHorarioCSI, HorarioCSIFields,
@@ -14,11 +15,25 @@ type RecordEntry = { id: string; fields: HorarioCSIFields };
 
 // ─── Static data ─────────────────────────────────────────────────────────────
 
-const ALL_PEOPLE = [
+const PEOPLE_KEY = 'tafe_horario_equipo';
+
+const DEFAULT_PEOPLE = [
   'Sky', 'Guillermo', 'Joseph', 'Heidy', 'Juan Diego', 'Jordany',
   'Karen', 'Luis Carlos', 'Jimmy', 'Jefferson', 'Alex', 'Ares',
   'Andres', 'Jennifer', 'Emanuel', 'Angel', 'Jorge',
 ];
+
+const loadPeople = (): string[] => {
+  try {
+    const stored = localStorage.getItem(PEOPLE_KEY);
+    if (stored) return JSON.parse(stored) as string[];
+  } catch { /* ignore */ }
+  return DEFAULT_PEOPLE;
+};
+
+const savePeople = (people: string[]) => {
+  localStorage.setItem(PEOPLE_KEY, JSON.stringify(people));
+};
 
 const ALL_ROLES = [
   'Pc 1 Pantalla', 'Pc 2 Switch y envivo', 'Sonido', 'Cámara 1', 'Cámara 2',
@@ -73,6 +88,143 @@ const toDateKey = (year: number, month: number, day: number) =>
 
 const todayKey = () => new Date().toISOString().split('T')[0];
 
+// ─── Manage Team Modal ────────────────────────────────────────────────────────
+
+const ManageTeam: React.FC<{
+  people: string[];
+  onChange: (people: string[]) => void;
+  onClose: () => void;
+}> = ({ people, onChange, onClose }) => {
+  const [list, setList] = useState<string[]>([...people]);
+  const [editingIdx, setEditingIdx] = useState<number | null>(null);
+  const [editValue, setEditValue] = useState('');
+  const [newName, setNewName] = useState('');
+
+  const startEdit = (idx: number) => {
+    setEditingIdx(idx);
+    setEditValue(list[idx]);
+  };
+
+  const confirmEdit = (idx: number) => {
+    const trimmed = editValue.trim();
+    if (!trimmed) return;
+    const updated = list.map((p, i) => (i === idx ? trimmed : p));
+    setList(updated);
+    setEditingIdx(null);
+  };
+
+  const remove = (idx: number) => {
+    setList(list.filter((_, i) => i !== idx));
+    if (editingIdx === idx) setEditingIdx(null);
+  };
+
+  const addNew = () => {
+    const trimmed = newName.trim();
+    if (!trimmed || list.includes(trimmed)) return;
+    setList([...list, trimmed]);
+    setNewName('');
+  };
+
+  const save = () => {
+    onChange(list);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
+      <div
+        className="bg-white rounded-[2rem] p-6 shadow-xl w-full max-w-sm space-y-5 animate-fadeIn"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Configuración</p>
+            <h4 className="font-montserrat font-bold text-slate-800 text-base">Equipo CSI/Medios</h4>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 transition-all">
+            <X size={16} className="text-slate-400" />
+          </button>
+        </div>
+
+        {/* Member list */}
+        <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
+          {list.map((person, idx) => (
+            <div key={idx} className="flex items-center gap-2">
+              {editingIdx === idx ? (
+                <>
+                  <input
+                    autoFocus
+                    value={editValue}
+                    onChange={e => setEditValue(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') confirmEdit(idx); if (e.key === 'Escape') setEditingIdx(null); }}
+                    className="flex-1 text-xs bg-white border border-turqui rounded-xl px-3 py-1.5 outline-none focus:ring-1 ring-turqui"
+                  />
+                  <button
+                    onClick={() => confirmEdit(idx)}
+                    className="p-1.5 bg-turqui text-white rounded-lg hover:bg-turqui/80 transition-all"
+                  >
+                    <Save size={12} />
+                  </button>
+                  <button
+                    onClick={() => setEditingIdx(null)}
+                    className="p-1.5 bg-slate-100 text-slate-500 rounded-lg hover:bg-slate-200 transition-all"
+                  >
+                    <X size={12} />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span className="flex-1 text-xs text-slate-700 bg-slate-50 border border-slate-100 rounded-xl px-3 py-1.5">
+                    {person}
+                  </span>
+                  <button
+                    onClick={() => startEdit(idx)}
+                    className="p-1.5 bg-slate-100 text-slate-500 rounded-lg hover:border-turqui hover:text-turqui border border-transparent transition-all"
+                  >
+                    <Edit2 size={12} />
+                  </button>
+                  <button
+                    onClick={() => remove(idx)}
+                    className="p-1.5 bg-slate-100 text-slate-500 rounded-lg hover:bg-red-50 hover:text-red-500 border border-transparent transition-all"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Add new member */}
+        <div className="flex gap-2 pt-1 border-t border-slate-100">
+          <input
+            type="text"
+            value={newName}
+            onChange={e => setNewName(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') addNew(); }}
+            placeholder="Nuevo miembro..."
+            className="flex-1 text-xs bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none focus:ring-1 ring-turqui"
+          />
+          <button
+            onClick={addNew}
+            disabled={!newName.trim() || list.includes(newName.trim())}
+            className="p-2 bg-turqui text-white rounded-xl hover:bg-turqui/80 transition-all disabled:opacity-40"
+          >
+            <UserPlus size={14} />
+          </button>
+        </div>
+
+        <button
+          onClick={save}
+          className="w-full py-2.5 bg-navy-tafe text-white text-xs font-bold rounded-xl hover:bg-navy-tafe/90 transition-all"
+        >
+          Guardar cambios
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 const RoleBadge: React.FC<{ role: string }> = ({ role }) => (
@@ -91,10 +243,11 @@ const ServiceDot: React.FC<{ count: number }> = ({ count }) => (
 
 const EditRow: React.FC<{
   record: RecordEntry;
+  people: string[];
   onSave: (id: string, fields: Partial<HorarioCSIFields>) => void;
   onCancel: () => void;
   saving: boolean;
-}> = ({ record, onSave, onCancel, saving }) => {
+}> = ({ record, people, onSave, onCancel, saving }) => {
   const [rol, setRol] = useState(record.fields['Rol Asignado'] ?? '');
   const [personas, setPersonas] = useState<string[]>(record.fields['Persona a cargo'] ?? []);
   const [notas, setNotas] = useState(record.fields.Notas ?? '');
@@ -118,7 +271,7 @@ const EditRow: React.FC<{
       <div>
         <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Personas a cargo</label>
         <div className="flex flex-wrap gap-1">
-          {ALL_PEOPLE.map(p => (
+          {people.map(p => (
             <button
               key={p}
               onClick={() => togglePerson(p)}
@@ -169,10 +322,11 @@ const EditRow: React.FC<{
 const DayDetail: React.FC<{
   dateKey: string;
   records: RecordEntry[];
+  people: string[];
   onClose: () => void;
   onUpdate: (id: string, fields: Partial<HorarioCSIFields>) => void;
   canEdit: boolean;
-}> = ({ dateKey, records, onClose, onUpdate, canEdit }) => {
+}> = ({ dateKey, records, people, onClose, onUpdate, canEdit }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -222,7 +376,7 @@ const DayDetail: React.FC<{
                 {recs.map(r => (
                   <div key={r.id}>
                     {editingId === r.id ? (
-                      <EditRow record={r} onSave={handleSave} onCancel={() => setEditingId(null)} saving={saving} />
+                      <EditRow record={r} people={people} onSave={handleSave} onCancel={() => setEditingId(null)} saving={saving} />
                     ) : (
                       <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-turqui/30 transition-all group">
                         <div className="flex items-center gap-3 flex-wrap">
@@ -274,6 +428,13 @@ const HorarioCSI: React.FC<HorarioCSIProps> = ({ canEdit = false }) => {
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'calendar' | 'upcoming'>('calendar');
+  const [people, setPeople] = useState<string[]>(loadPeople);
+  const [showManageTeam, setShowManageTeam] = useState(false);
+
+  const handlePeopleChange = (updated: string[]) => {
+    setPeople(updated);
+    savePeople(updated);
+  };
 
   const isOnline = airtableIsActive();
 
@@ -356,6 +517,15 @@ const HorarioCSI: React.FC<HorarioCSIProps> = ({ canEdit = false }) => {
           )}
         </div>
         <div className="flex gap-2">
+          {canEdit && (
+            <button
+              onClick={() => setShowManageTeam(true)}
+              className="flex items-center gap-1.5 text-[10px] font-bold px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-500 hover:border-turqui hover:text-turqui transition-all"
+              title="Gestionar equipo"
+            >
+              <Settings size={12} /> Equipo
+            </button>
+          )}
           <button
             onClick={() => setActiveTab('calendar')}
             className={`text-[10px] font-bold px-4 py-1.5 rounded-xl border transition-all ${activeTab === 'calendar' ? 'bg-navy-tafe text-white border-navy-tafe' : 'bg-white text-slate-500 border-slate-200 hover:border-navy-tafe'}`}
@@ -370,6 +540,14 @@ const HorarioCSI: React.FC<HorarioCSIProps> = ({ canEdit = false }) => {
           </button>
         </div>
       </div>
+
+      {showManageTeam && (
+        <ManageTeam
+          people={people}
+          onChange={handlePeopleChange}
+          onClose={() => setShowManageTeam(false)}
+        />
+      )}
 
       {error && (
         <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600">
@@ -457,6 +635,7 @@ const HorarioCSI: React.FC<HorarioCSIProps> = ({ canEdit = false }) => {
               <DayDetail
                 dateKey={selectedDate}
                 records={byDate[selectedDate] ?? []}
+                people={people}
                 onClose={() => setSelectedDate(null)}
                 onUpdate={handleUpdate}
                 canEdit={canEdit}
