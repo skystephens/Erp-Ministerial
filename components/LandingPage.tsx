@@ -4,8 +4,12 @@ import Login from './Login';
 import {
   Menu, X, ChevronRight, ArrowRight,
   Heart, Users, Zap, BookOpen, Music2, Settings, Target,
-  MapPin, Phone, MessageCircle, Check,
+  MapPin, Phone, MessageCircle, Check, Facebook,
 } from 'lucide-react';
+
+declare global {
+  interface Window { FB?: { XFBML: { parse: () => void } } }
+}
 
 // ─── Axes data ────────────────────────────────────────────────────────────────
 const AXES = [
@@ -20,6 +24,53 @@ const AXES = [
 
 // ─── Form types ───────────────────────────────────────────────────────────────
 interface ProspectoForm { nombre: string; telefono: string; zona: string; origen: string; }
+
+// ─── Facebook Feed Section ────────────────────────────────────────────────────
+const FacebookFeedSection: React.FC = () => {
+  useEffect(() => {
+    if (window.FB) window.FB.XFBML.parse();
+  }, []);
+
+  return (
+    <section className="py-20 bg-white">
+      <div className="max-w-5xl mx-auto px-6">
+        <div className="text-center mb-10">
+          <span className="text-xs font-bold tracking-widest uppercase text-turqui">Redes Sociales</span>
+          <h2 className="text-3xl md:text-4xl font-bold text-navy-tafe mt-2 mb-3"
+            style={{ fontFamily: 'Montserrat, sans-serif' }}>
+            Síguenos en Facebook
+          </h2>
+          <p className="text-slate-400 text-base max-w-xl mx-auto">
+            Mantente al día con los servicios, eventos y noticias de nuestra comunidad.
+          </p>
+        </div>
+
+        <div className="flex flex-col items-center gap-4">
+          <div
+            className="fb-page"
+            data-href="https://www.facebook.com/Tabernaculoapostolicodefe"
+            data-tabs="timeline"
+            data-width="500"
+            data-height="600"
+            data-small-header="true"
+            data-adapt-container-width="true"
+            data-hide-cover="false"
+            data-show-facepile="true"
+          />
+          <a
+            href="https://www.facebook.com/Tabernaculoapostolicodefe"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white transition-all hover:opacity-90 hover:scale-105"
+            style={{ background: '#1877F2' }}
+          >
+            <Facebook size={16} /> Ver página completa
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+};
 
 // ─── LandingPage ──────────────────────────────────────────────────────────────
 const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
@@ -630,6 +681,9 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
             </div>
           </div>
         </section>
+
+        {/* ── Facebook Feed ───────────────────────────────────────────────────── */}
+        <FacebookFeedSection />
 
         {/* ── Conéctate ───────────────────────────────────────────────────────── */}
         <section
