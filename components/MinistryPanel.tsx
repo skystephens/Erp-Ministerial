@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { User, Task, UserRole } from '../types';
 import { Bell, ChevronDown } from 'lucide-react';
 import TurnoCSI from './TurnoCSI';
+import FacebookSection from './FacebookSection';
 
 interface MinistryPanelProps {
   user: User;
@@ -88,6 +89,9 @@ const MinistryPanel: React.FC<MinistryPanelProps> = ({ user, tasks }) => {
       <section className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
         <TurnoCSI canEdit={canEdit} />
       </section>
+
+      {/* Feed Facebook TAFE */}
+      <FacebookSection />
 
     </div>
   );
